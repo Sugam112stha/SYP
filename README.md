@@ -1,2 +1,3 @@
 # SYP
-Project is my
+Project is our
+
