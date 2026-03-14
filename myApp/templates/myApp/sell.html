@@ -1,0 +1,254 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}Sell Your Device{% endblock %}
+
+{% block extra_css %}
+<style>
+.sell-page { max-width: 860px; margin: 2.5rem auto; padding: 0 1.5rem 4rem; }
+.sell-header { text-align: center; margin-bottom: 2rem; }
+.sell-header h1 { font-size: 2.2rem; font-weight: 800; color: var(--gray-900); margin-bottom: 0.4rem; }
+.sell-header p  { color: var(--gray-500); font-size: 1rem; }
+.tips-box {
+    background: var(--primary-bg); border: 1.5px solid #bfdbfe;
+    border-radius: var(--radius-lg); padding: 1.2rem 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.tips-box h3 { color: var(--primary-dark); font-size: 0.95rem; font-weight: 700; margin-bottom: 0.7rem; }
+.tips-box ul { list-style: none; }
+.tips-box ul li { font-size: 0.88rem; color: #1e40af; margin-bottom: 4px; }
+.sell-card {
+    background: white; border-radius: var(--radius-xl);
+    padding: 2rem; box-shadow: var(--shadow-sm);
+    border: 1.5px solid var(--gray-200);
+}
+.section-label {
+    font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--primary); margin-bottom: 1rem;
+    padding-bottom: 6px; border-bottom: 2px solid var(--primary-bg);
+}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.fg { margin-bottom: 1.1rem; }
+.fg label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85rem; color: var(--gray-700); }
+.fg label .req { color: var(--danger); }
+.fg input, .fg select, .fg textarea {
+    width: 100%; padding: 0.7rem 0.9rem;
+    border: 2px solid var(--gray-200); border-radius: var(--radius);
+    font-size: 0.92rem; font-family: inherit; transition: var(--transition);
+    box-sizing: border-box; background: white;
+}
+.fg input:focus, .fg select:focus, .fg textarea:focus {
+    border-color: var(--primary); outline: none;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+/* Upload area */
+.upload-zone {
+    border: 2px dashed var(--gray-300); border-radius: var(--radius-lg);
+    padding: 2rem; text-align: center; cursor: pointer;
+    transition: var(--transition); background: var(--gray-50);
+    position: relative;
+}
+.upload-zone:hover, .upload-zone.dragover {
+    border-color: var(--primary); background: var(--primary-bg);
+}
+.upload-zone i { font-size: 2.2rem; color: var(--primary); margin-bottom: 0.6rem; display: block; }
+.upload-zone p { color: var(--gray-600); font-size: 0.9rem; margin-bottom: 4px; }
+.upload-zone .hint { font-size: 0.78rem; color: var(--gray-400); }
+.preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 8px; margin-top: 12px; }
+.preview-item { position: relative; aspect-ratio: 1; border-radius: var(--radius); overflow: hidden; border: 2px solid var(--gray-200); }
+.preview-item img { width: 100%; height: 100%; object-fit: cover; }
+.preview-item .main-tag {
+    position: absolute; bottom: 4px; left: 4px;
+    background: var(--primary); color: white;
+    font-size: 0.65rem; font-weight: 700; padding: 1px 6px; border-radius: 3px;
+}
+.preview-item .remove-img {
+    position: absolute; top: 4px; right: 4px;
+    background: rgba(0,0,0,0.6); color: white;
+    border: none; border-radius: 50%; width: 20px; height: 20px;
+    cursor: pointer; font-size: 0.65rem; display: flex;
+    align-items: center; justify-content: center; transition: var(--transition);
+}
+.preview-item .remove-img:hover { background: var(--danger); }
+.img-count-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--gray-100); padding: 4px 12px; border-radius: var(--radius-full);
+    font-size: 0.8rem; font-weight: 600; color: var(--gray-600); margin-top: 8px;
+}
+.img-count-badge.ok { background: var(--success-bg); color: var(--success); }
+/* Price prefix */
+.price-group { position: relative; }
+.price-prefix {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    font-weight: 700; color: var(--primary); font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem; pointer-events: none;
+}
+.price-group input { padding-left: 42px; }
+/* Submit */
+.sell-btn {
+    width: 100%; padding: 1rem;
+    background: var(--primary); color: white;
+    border: none; border-radius: var(--radius-md);
+    font-size: 1.05rem; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: var(--transition);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    margin-top: 0.5rem;
+}
+.sell-btn:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.sell-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+@media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="sell-page">
+    <div class="sell-header">
+        <h1>📦 List Your Device</h1>
+        <p>Reach thousands of verified buyers across Nepal</p>
+    </div>
+
+    <div class="tips-box">
+        <h3><i class="fas fa-lightbulb"></i> Tips for a great listing</h3>
+        <ul>
+            <li>✅ Upload 3+ clear photos from different angles</li>
+            <li>✅ Mention battery health, storage, any scratches honestly</li>
+            <li>✅ Include original box & accessories if available</li>
+            <li>✅ Set a fair price — check similar listings first</li>
+        </ul>
+    </div>
+
+    <div class="sell-card">
+        <form method="POST" action="{% url 'sell' %}" enctype="multipart/form-data" id="sellForm">
+            {% csrf_token %}
+
+            <!-- Photos -->
+            <div class="section-label"><i class="fas fa-camera"></i> Product Photos</div>
+            <div class="fg">
+                <label>Photos <span class="req">*</span> <span style="font-weight:400;color:var(--gray-400);">(Upload 1–10 images)</span></label>
+                <div class="upload-zone" id="uploadZone" onclick="document.getElementById('imageInput').click()">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <p>Click or drag & drop photos here</p>
+                    <p class="hint">JPG, PNG, WEBP — max 10MB each — up to 10 photos</p>
+                    <input type="file" id="imageInput" name="images" multiple accept="image/*" style="display:none;" onchange="handleImages(this.files)">
+                </div>
+                <div class="preview-grid" id="previewGrid"></div>
+                <div class="img-count-badge" id="imgCount">0 photos selected</div>
+            </div>
+
+            <!-- Title -->
+            <div class="section-label" style="margin-top:1.5rem;"><i class="fas fa-tag"></i> Item Details</div>
+            <div class="fg">
+                <label>Title <span class="req">*</span></label>
+                <input type="text" name="title" placeholder="e.g. iPhone 13 Pro 256GB Midnight — Excellent Condition" required maxlength="200">
+            </div>
+
+            <!-- Category & Price -->
+            <div class="form-row">
+                <div class="fg">
+                    <label>Category <span class="req">*</span></label>
+                    <select name="category" required>
+                        <option value="">Select category</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.pk }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="fg">
+                    <label>Asking Price (Rs.) <span class="req">*</span></label>
+                    <div class="price-group">
+                        <span class="price-prefix">Rs.</span>
+                        <input type="number" name="price" placeholder="0" min="1" step="1" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Condition -->
+            <div class="fg">
+                <label>Condition <span class="req">*</span></label>
+                <select name="condition" required>
+                    <option value="">Select condition</option>
+                    <option value="excellent">⭐ Excellent / Like New — barely used, no marks</option>
+                    <option value="good">✅ Good — minor signs of use, fully working</option>
+                    <option value="fair">⚠️ Fair — visible wear but fully working</option>
+                    <option value="poor">🔧 Poor — heavy wear or for parts only</option>
+                </select>
+            </div>
+
+            <!-- Description -->
+            <div class="fg">
+                <label>Description <span class="req">*</span></label>
+                <textarea name="description" rows="5" placeholder="Describe your device in detail: battery health (e.g. 92%), storage, any scratches/dents, what's included in the box, reason for selling..." required minlength="30"></textarea>
+            </div>
+
+            <!-- Location -->
+            <div class="section-label" style="margin-top:0.5rem;"><i class="fas fa-map-marker-alt"></i> Location</div>
+            <div class="fg">
+                <label>Location <span style="font-weight:400;color:var(--gray-400);">(helps buyers nearby)</span></label>
+                <input type="text" name="location" placeholder="e.g. Thamel, Kathmandu">
+            </div>
+
+            <button type="submit" class="sell-btn" id="submitBtn">
+                <i class="fas fa-cloud-upload-alt"></i> List Item for Sale
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let selectedFiles = [];
+
+function handleImages(files) {
+    const newFiles = Array.from(files);
+    const remaining = 10 - selectedFiles.length;
+    const toAdd = newFiles.slice(0, remaining);
+    selectedFiles = [...selectedFiles, ...toAdd];
+    renderPreviews();
+    updateFileInput();
+}
+
+function removeImg(idx) {
+    selectedFiles.splice(idx, 1);
+    renderPreviews();
+    updateFileInput();
+}
+
+function renderPreviews() {
+    const grid  = document.getElementById('previewGrid');
+    const badge = document.getElementById('imgCount');
+    grid.innerHTML = '';
+    selectedFiles.forEach((file, i) => {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const div = document.createElement('div');
+            div.className = 'preview-item';
+            div.innerHTML = `
+                <img src="${e.target.result}" alt="Preview ${i+1}">
+                ${i === 0 ? '<span class="main-tag">MAIN</span>' : ''}
+                <button type="button" class="remove-img" onclick="removeImg(${i})">✕</button>`;
+            grid.appendChild(div);
+        };
+        reader.readAsDataURL(file);
+    });
+    const count = selectedFiles.length;
+    badge.textContent = `${count} photo${count !== 1 ? 's' : ''} selected`;
+    badge.className   = 'img-count-badge' + (count >= 1 ? ' ok' : '');
+}
+
+function updateFileInput() {
+    const dt = new DataTransfer();
+    selectedFiles.forEach(f => dt.items.add(f));
+    document.getElementById('imageInput').files = dt.files;
+}
+
+// Drag & drop
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('dragover'); });
+zone.addEventListener('dragleave', ()  => zone.classList.remove('dragover'));
+zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    handleImages(e.dataTransfer.files);
+});
+</script>
+{% endblock %}

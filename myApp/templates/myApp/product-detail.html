@@ -1,0 +1,419 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}{{ product.title }} — AlphaMart{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Layout ───────────────────────────────────────────── */
+.pd-wrap {
+    max-width: 1200px; margin: 0 auto 4rem; padding: 0 1.5rem;
+}
+.breadcrumb {
+    display: flex; align-items: center; gap: 6px;
+    color: var(--gray-400); font-size: 0.85rem;
+    padding: 1.2rem 0 1.5rem; flex-wrap: wrap;
+}
+.breadcrumb a { color: var(--primary); font-weight: 500; }
+.breadcrumb i { font-size: 0.6rem; }
+
+.pd-grid {
+    display: grid; grid-template-columns: 1fr 420px; gap: 3rem; align-items: start;
+}
+
+/* ── Gallery ──────────────────────────────────────────── */
+.pd-gallery { position: sticky; top: 80px; align-self: start; }
+.pd-main-img {
+    border-radius: var(--radius-xl); overflow: hidden;
+    background: var(--gray-100);
+    height: 400px;
+    border: 1.5px solid var(--gray-200); cursor: zoom-in;
+    display: flex; align-items: center; justify-content: center;
+}
+.pd-main-img img {
+    max-width: 100%; max-height: 400px;
+    width: auto; height: auto;
+    object-fit: contain;
+    display: block; margin: 0 auto;
+    transition: transform 0.4s ease;
+}
+.pd-main-img:hover img { transform: scale(1.04); }
+.pd-thumbs { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.pd-thumb {
+    width: 64px; height: 64px; border-radius: var(--radius);
+    overflow: hidden; cursor: pointer; flex-shrink: 0;
+    border: 2.5px solid var(--gray-200); transition: var(--transition);
+}
+.pd-thumb.active, .pd-thumb:hover { border-color: var(--primary); }
+.pd-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── Info Panel ───────────────────────────────────────── */
+.pd-info { display: flex; flex-direction: column; gap: 1rem; }
+.pd-cat   { font-size: 0.78rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+.pd-title { font-size: 1.7rem; font-weight: 800; color: var(--gray-900); line-height: 1.25; }
+.pd-price { font-size: 2.2rem; font-weight: 800; color: var(--primary); font-family: 'JetBrains Mono', monospace; }
+
+.pd-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pd-cond {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 14px; border-radius: var(--radius-full);
+    font-size: 0.82rem; font-weight: 700;
+}
+.cond-excellent { background: var(--success-bg); color: var(--success); }
+.cond-good      { background: var(--primary-bg); color: var(--primary); }
+.cond-fair      { background: var(--warning-bg); color: var(--warning); }
+.cond-poor      { background: var(--danger-bg);  color: var(--danger);  }
+.pd-loc {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 12px; background: var(--gray-100);
+    border-radius: var(--radius-full); font-size: 0.82rem; color: var(--gray-600);
+}
+.pd-loc i { color: var(--primary); }
+
+/* ── Seller Box ───────────────────────────────────────── */
+.pd-seller {
+    background: var(--gray-50); border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-lg); padding: 1rem 1.2rem;
+    display: flex; align-items: center; gap: 12px;
+}
+.pd-seller-av {
+    width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 800;
+}
+.pd-seller-name  { font-weight: 700; color: var(--gray-900); font-size: 0.95rem; }
+.pd-seller-meta  { font-size: 0.78rem; color: var(--gray-500); margin-top: 2px; }
+.pd-seller-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 0.76rem; font-weight: 700; color: var(--success); margin-top: 4px; }
+
+/* ── Shipping Info ────────────────────────────────────── */
+.pd-shipping {
+    background: #f0fdf4; border: 1.5px solid #bbf7d0;
+    border-radius: var(--radius-md); padding: 10px 14px;
+    font-size: 0.85rem; color: #15803d; font-weight: 600;
+    display: flex; align-items: center; gap: 8px;
+}
+
+/* ── Action Buttons ───────────────────────────────────── */
+.pd-actions { display: flex; flex-direction: column; gap: 10px; }
+.btn-add-cart {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 1rem; background: var(--primary); color: white;
+    border: none; border-radius: var(--radius-lg);
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: var(--transition); text-decoration: none;
+}
+.btn-add-cart:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+.btn-back-list {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 0.85rem; background: white; color: var(--primary);
+    border: 2px solid var(--primary); border-radius: var(--radius-lg);
+    font-size: 0.92rem; font-weight: 600; transition: var(--transition); text-decoration: none;
+}
+.btn-back-list:hover { background: var(--primary-bg); }
+.sold-banner {
+    padding: 1rem; text-align: center; font-weight: 700; font-size: 1rem;
+    background: var(--danger-bg); color: var(--danger);
+    border: 2px solid var(--danger); border-radius: var(--radius-lg);
+}
+.own-banner {
+    padding: 1rem; text-align: center; font-weight: 600;
+    background: var(--warning-bg); color: var(--warning);
+    border-radius: var(--radius-lg); font-size: 0.92rem;
+}
+
+/* ── Description & Specs ──────────────────────────────── */
+.pd-desc-section {
+    background: white; border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-xl); padding: 2rem; margin-top: 2rem;
+}
+.pd-desc-section h2 {
+    font-size: 1.2rem; font-weight: 800; color: var(--gray-900);
+    margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;
+}
+.pd-desc-section h2 i { color: var(--primary); }
+.pd-desc-text {
+    color: var(--gray-600); line-height: 1.85; font-size: 0.93rem;
+    white-space: pre-line;
+}
+.pd-desc-text:empty::after { content: 'No description provided.'; color: var(--gray-400); font-style: italic; }
+
+.pd-specs {
+    background: white; border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-xl); overflow: hidden; margin-top: 1.5rem;
+}
+.pd-specs-title {
+    padding: 1rem 1.5rem; font-weight: 800; font-size: 1.05rem;
+    background: var(--gray-50); border-bottom: 1px solid var(--gray-200);
+    display: flex; align-items: center; gap: 8px; color: var(--gray-900);
+}
+.pd-specs-title i { color: var(--primary); }
+.spec-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 1.5rem; border-bottom: 1px solid var(--gray-100); font-size: 0.88rem; }
+.spec-row:last-child { border-bottom: none; }
+.spec-label { color: var(--gray-500); font-weight: 500; }
+.spec-val   { font-weight: 700; color: var(--gray-800); text-align: right; }
+
+@media (max-width: 900px) {
+    .pd-grid { grid-template-columns: 1fr; }
+    .pd-gallery { position: static; }
+    .pd-title { font-size: 1.4rem; }
+    .pd-price { font-size: 1.8rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pd-wrap">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <a href="{% url 'index' %}">Home</a>
+        <i class="fas fa-chevron-right"></i>
+        <a href="{% url 'products' %}">Products</a>
+        <i class="fas fa-chevron-right"></i>
+        {% if product.category %}
+        <a href="{% url 'products' %}?category={{ product.category.pk }}">{{ product.category.name }}</a>
+        <i class="fas fa-chevron-right"></i>
+        {% endif %}
+        <span>{{ product.title|truncatechars:45 }}</span>
+    </div>
+
+    <div class="pd-grid">
+
+        <!-- ── Left: Gallery ──────────────────────────── -->
+        <div class="pd-gallery">
+            <div class="pd-main-img">
+                {% with images.first as first_img %}
+                {% if first_img %}
+                <img src="{{ first_img.image.url }}" alt="{{ product.title }}" id="mainImg">
+                {% else %}
+                <div style="width:100%;height:100%;min-height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--primary-bg);gap:12px;">
+                    <i class="fas fa-image" style="font-size:4rem;color:var(--primary);opacity:0.2;"></i>
+                    <span style="color:var(--gray-400);font-size:0.9rem;">No photos uploaded</span>
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+            {% if images.count > 1 %}
+            <div class="pd-thumbs">
+                {% for img in images %}
+                <div class="pd-thumb {% if forloop.first %}active{% endif %}" onclick="changeImg('{{ img.image.url }}', this)">
+                    <img src="{{ img.image.url }}" alt="Photo {{ forloop.counter }}" loading="lazy">
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ── Right: Info ────────────────────────────── -->
+        <div class="pd-info">
+            <div class="pd-cat">{{ product.category.name|default:"Electronics" }}</div>
+            <h1 class="pd-title">{{ product.title }}</h1>
+            <div class="pd-price">Rs. {{ product.price }}</div>
+
+            <div class="pd-badges">
+                <span class="pd-cond cond-{{ product.condition }}">
+                    <i class="fas fa-star"></i> {{ product.get_condition_display }}
+                </span>
+                {% if product.location %}
+                <span class="pd-loc"><i class="fas fa-map-marker-alt"></i> {{ product.location }}</span>
+                {% endif %}
+            </div>
+
+            <!-- Seller -->
+            <div class="pd-seller">
+                <div class="pd-seller-av">{{ product.seller.first_name|first|upper }}</div>
+                <div>
+                    <div class="pd-seller-name">{{ product.seller.get_full_name }}</div>
+                    <div class="pd-seller-meta">
+                        <i class="fas fa-clock" style="color:var(--primary);"></i>
+                        Listed on {{ product.created_at|date:"d M Y" }} &nbsp;·&nbsp;
+                        {{ product.created_at|timesince }} ago
+                    </div>
+                    <div class="pd-seller-badge"><i class="fas fa-check-circle"></i> Verified Seller</div>
+                </div>
+            </div>
+
+            <!-- Shipping -->
+            <div class="pd-shipping">
+                <i class="fas fa-truck"></i>
+                {% if product.price >= 100000 %}
+                    <strong>FREE Delivery</strong> — Order above Rs. 1,00,000
+                {% else %}
+                    Delivery: Rs. 200 (KTM Valley) / Rs. 400 (Outside) &nbsp;·&nbsp; <strong>FREE above Rs. 1,00,000</strong>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="pd-actions">
+                {% if product.status == 'available' %}
+                    {% if user.is_authenticated %}
+                        {% if product.seller == user %}
+                        <div class="own-banner"><i class="fas fa-info-circle"></i> This is your own listing</div>
+                        {% else %}
+                        <a href="{% url 'add_to_cart' product.pk %}" class="btn-add-cart">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </a>
+                        {% endif %}
+                    {% else %}
+                    <a href="{% url 'login' %}?next={{ request.path }}" class="btn-add-cart">
+                        <i class="fas fa-sign-in-alt"></i> Login to Buy
+                    </a>
+                    {% endif %}
+                {% else %}
+                <div class="sold-banner"><i class="fas fa-times-circle"></i> This item has been sold</div>
+                {% endif %}
+                <a href="{% url 'products' %}" class="btn-back-list">
+                    <i class="fas fa-arrow-left"></i> Back to Products
+                </a>
+            </div>
+
+            <!-- Chat with Seller -->
+            {% if user.is_authenticated and product.status == 'available' and product.seller != user %}
+            <div style="background:white;border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);overflow:hidden;margin-top:4px;">
+                <div style="background:var(--primary-bg);padding:10px 14px;border-bottom:1px solid var(--gray-200);display:flex;align-items:center;gap:8px;">
+                    <i class="fas fa-comments" style="color:var(--primary);"></i>
+                    <span style="font-weight:700;font-size:0.9rem;color:var(--gray-800);">Chat with Seller</span>
+                    <span style="font-size:0.78rem;color:var(--gray-500);margin-left:auto;">Ask about price, condition, or meetup</span>
+                </div>
+                <div style="padding:12px;">
+                    <form method="POST" action="{% url 'send_message' product.pk %}">
+                        {% csrf_token %}
+                        <div style="display:flex;gap:8px;align-items:flex-end;">
+                            <textarea name="content" rows="2" placeholder="Hi, is this still available? Can you lower the price?..."
+                                style="flex:1;padding:10px 12px;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:0.88rem;font-family:inherit;resize:none;outline:none;transition:border-color 0.2s;"
+                                onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--gray-200)'"></textarea>
+                            <button type="submit"
+                                style="background:var(--primary);color:white;border:none;border-radius:var(--radius-md);padding:10px 18px;font-weight:700;font-size:0.88rem;cursor:pointer;font-family:inherit;white-space:nowrap;height:fit-content;">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </form>
+                    {% if existing_thread %}
+                    <a href="{% url 'conversation' product.pk product.seller.pk %}"
+                        style="display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:0.82rem;color:var(--primary);font-weight:600;">
+                        <i class="fas fa-history"></i> View conversation history ({{ existing_thread }} message{{ existing_thread|pluralize }})
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Trust badges -->
+            <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:4px;">
+                <span style="font-size:0.8rem;color:var(--gray-500);display:flex;align-items:center;gap:5px;"><i class="fas fa-shield-alt" style="color:var(--success);"></i> Buyer Protected</span>
+                <span style="font-size:0.8rem;color:var(--gray-500);display:flex;align-items:center;gap:5px;"><i class="fas fa-lock" style="color:var(--primary);"></i> Secure Payment</span>
+                <span style="font-size:0.8rem;color:var(--gray-500);display:flex;align-items:center;gap:5px;"><i class="fas fa-undo" style="color:var(--warning);"></i> Verified Photos</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Description & Specs ───────────────────────── -->
+    <div style="display:grid;grid-template-columns:1fr 420px;gap:1.5rem;margin-top:0.5rem;" class="pd-bottom">
+
+        <!-- Description -->
+        <div class="pd-desc-section">
+            <h2><i class="fas fa-align-left"></i> Description</h2>
+            <p class="pd-desc-text">{{ product.description|default:"No description provided." }}</p>
+        </div>
+
+        <!-- Specs table -->
+        <div class="pd-specs">
+            <div class="pd-specs-title"><i class="fas fa-list-ul"></i> Specifications</div>
+            <div class="spec-row">
+                <span class="spec-label">Condition</span>
+                <span class="spec-val">{{ product.get_condition_display }}</span>
+            </div>
+            <div class="spec-row">
+                <span class="spec-label">Category</span>
+                <span class="spec-val">{{ product.category.name|default:"Electronics" }}</span>
+            </div>
+            <div class="spec-row">
+                <span class="spec-label">Price</span>
+                <span class="spec-val" style="color:var(--primary);font-family:'JetBrains Mono',monospace;">Rs. {{ product.price }}</span>
+            </div>
+            <div class="spec-row">
+                <span class="spec-label">Location</span>
+                <span class="spec-val">{{ product.location|default:"Nepal" }}</span>
+            </div>
+            <div class="spec-row">
+                <span class="spec-label">Seller</span>
+                <span class="spec-val">{{ product.seller.get_full_name }}</span>
+            </div>
+            <div class="spec-row">
+                <span class="spec-label">Listed Date</span>
+                <span class="spec-val">{{ product.created_at|date:"d M Y" }}</span>
+            </div>
+            <div class="spec-row">
+                <span class="spec-label">Photos</span>
+                <span class="spec-val">{{ images.count }} uploaded</span>
+            </div>
+            <div class="spec-row">
+                <span class="spec-label">Status</span>
+                <span class="spec-val" style="color:{% if product.status == 'available' %}var(--success){% else %}var(--danger){% endif %};">
+                    {{ product.get_status_display }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Related Products ──────────────────────────── -->
+    {% if related %}
+    <div style="margin-top:3rem;">
+        <div class="section-header">
+            <div>
+                <span class="section-subtitle">More Like This</span>
+                <h2>Related Products</h2>
+            </div>
+            <a href="{% url 'products' %}?category={{ product.category.pk }}" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+        </div>
+        <div class="product-grid">
+            {% for p in related %}
+            <div class="product-card">
+                <div class="product-image">
+                    <a href="{% url 'product_detail' p.pk %}" style="display:block;width:100%;height:100%;">
+                    {% with p.images.first as img %}
+                    {% if img %}
+                    <img src="{{ img.image.url }}" alt="{{ p.title }}" loading="lazy">
+                    {% else %}
+                    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--primary-bg);">
+                        <i class="fas fa-image" style="font-size:2.2rem;color:var(--primary);opacity:0.3;"></i>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                    </a>
+                    <span class="condition-chip cond-{{ p.condition }}">{{ p.get_condition_display }}</span>
+                </div>
+                <div class="product-info">
+                    <div class="product-category">{{ p.category.name|default:"Electronics" }}</div>
+                    <h3 class="product-title"><a href="{% url 'product_detail' p.pk %}">{{ p.title }}</a></h3>
+                    <div class="product-price"><span class="current-price mono">Rs. {{ p.price }}</span></div>
+                    {% if p.status == 'available' %}
+                    <a href="{% url 'add_to_cart' p.pk %}" class="add-to-cart-btn"><i class="fas fa-shopping-cart"></i> Add to Cart</a>
+                    {% else %}
+                    <button class="add-to-cart-btn" disabled>Sold Out</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changeImg(url, thumb) {
+    document.getElementById('mainImg').src = url;
+    document.querySelectorAll('.pd-thumb').forEach(t => t.classList.remove('active'));
+    thumb.classList.add('active');
+}
+
+// Responsive: collapse pd-bottom grid on mobile
+if (window.innerWidth <= 900) {
+    const b = document.querySelector('.pd-bottom');
+    if (b) b.style.gridTemplateColumns = '1fr';
+}
+</script>
+{% endblock %}

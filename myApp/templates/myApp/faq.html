@@ -1,0 +1,212 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}FAQ{% endblock %}
+
+{% block extra_css %}
+<style>
+.faq-hero {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+    text-align: center;
+    padding: 4rem 2rem;
+}
+.faq-hero h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 0.5rem; }
+.faq-hero p { opacity: 0.85; font-size: 1.1rem; margin-bottom: 2rem; }
+.faq-search-box {
+    max-width: 500px;
+    margin: 0 auto;
+    display: flex;
+    background: white;
+    border-radius: 50px;
+    padding: 0.5rem 0.5rem 0.5rem 1.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+.faq-search-box input {
+    flex: 1; border: none; outline: none;
+    font-size: 1rem; background: transparent; color: #1e293b;
+}
+.faq-search-box button {
+    background: #2563eb; color: white; border: none;
+    padding: 0.6rem 1.5rem; border-radius: 50px;
+    font-weight: 600; cursor: pointer;
+}
+
+.faq-container { max-width: 900px; margin: 3rem auto; padding: 0 2rem 4rem; }
+
+.faq-category { margin-bottom: 2.5rem; }
+.faq-category-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.faq-item {
+    background: white;
+    border-radius: 1rem;
+    margin-bottom: 0.8rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    overflow: hidden;
+}
+.faq-question {
+    padding: 1.2rem 1.5rem;
+    font-weight: 600;
+    color: #1e293b;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    transition: background 0.2s;
+}
+.faq-question:hover { background: #f8fafc; }
+.faq-question.open { color: #2563eb; background: #eff6ff; }
+.faq-question i { transition: transform 0.3s; flex-shrink: 0; }
+.faq-question.open i { transform: rotate(180deg); }
+.faq-answer {
+    padding: 0 1.5rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s;
+    color: #64748b;
+    line-height: 1.7;
+    font-size: 0.95rem;
+}
+.faq-answer.open { max-height: 300px; padding: 1rem 1.5rem 1.5rem; }
+
+.faq-cta {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+    border-radius: 2rem;
+    padding: 3rem;
+    text-align: center;
+    margin-top: 3rem;
+}
+.faq-cta h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.5rem; }
+.faq-cta p { opacity: 0.85; margin-bottom: 2rem; }
+.cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.cta-btn {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.3s;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+.cta-btn:hover { background: rgba(255,255,255,0.35); }
+.cta-btn.solid { background: white; color: #2563eb; border-color: white; }
+.cta-btn.solid:hover { background: #f0f9ff; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="faq-hero">
+    <h1>Frequently Asked Questions</h1>
+    <p>Find answers to common questions about AlphaMart</p>
+    <div class="faq-search-box">
+        <i class="fas fa-search" style="color:#94a3b8;margin-right:0.5rem;"></i>
+        <input type="text" id="faqSearch" placeholder="Search questions..." oninput="searchFAQ(this.value)">
+        <button>Search</button>
+    </div>
+</section>
+
+<div class="faq-container">
+
+    <div class="faq-category" data-aos="fade-up">
+        <div class="faq-category-title">🛒 Buying</div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">How do I buy an item? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">Browse products, click on an item, and click "Add to Cart". Follow the checkout process to complete your purchase. All sellers are verified for your safety.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">Is it safe to buy on AlphaMart? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">Yes! All users are verified with email, phone number, and address. Sellers must upload real photos. We also have a complaint system if any issues arise.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">Can I return an item? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">Returns are handled between buyers and sellers. Discuss condition and returns before purchasing. For disputes, use our complaint system and we'll help resolve the issue.</div>
+        </div>
+    </div>
+
+    <div class="faq-category" data-aos="fade-up">
+        <div class="faq-category-title">💰 Selling</div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">How do I sell my item? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">Click "Sell" in the menu. Upload photos, add a title, description, price, and category. Once listed, buyers can contact you through our system.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">Are there any fees for selling? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">No! Listing items on AlphaMart is completely free. No listing fees, no commissions. You keep 100% of the sale price.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">How many photos do I need? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">Sellers must upload at least 1 photo per listing. More photos means more trust from buyers!</div>
+        </div>
+    </div>
+
+    <div class="faq-category" data-aos="fade-up">
+        <div class="faq-category-title">🔐 Account & Security</div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">How do I create an account? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">Click "Join Free" in the navigation. Provide your email, full name, phone number, and address. We verify all info to keep the community safe.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">Is my personal information safe? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">Yes! Your full details are never shared publicly. You control what information is visible through your profile settings.</div>
+        </div>
+    </div>
+
+    <div class="faq-category" data-aos="fade-up">
+        <div class="faq-category-title">⚖️ Payments & Disputes</div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">What if I have a problem with a transaction? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">Go to the "Report Issue" page and submit a complaint. Include details about the problem. Our team will review and help mediate within 48 hours.</div>
+        </div>
+        <div class="faq-item">
+            <div class="faq-question" onclick="toggleFAQ(this)">Can I cancel an order? <i class="fas fa-chevron-down"></i></div>
+            <div class="faq-answer">Go to your Dashboard, find the order, and contact the seller. If the item hasn't been handed over yet, cancellation is possible by mutual agreement.</div>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="faq-cta" data-aos="fade-up">
+        <h2>Still have questions?</h2>
+        <p>Can't find what you're looking for? We're here to help!</p>
+        <div class="cta-btns">
+            <a href="{% url 'contact' %}" class="cta-btn solid"><i class="fas fa-envelope"></i> Contact Us</a>
+            <a href="{% url 'complaints' %}" class="cta-btn"><i class="fas fa-flag"></i> Report Issue</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleFAQ(el) {
+    const answer = el.nextElementSibling;
+    const isOpen = el.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.faq-question').forEach(q => q.classList.remove('open'));
+    document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('open'));
+    // Open clicked if it was closed
+    if (!isOpen) {
+        el.classList.add('open');
+        answer.classList.add('open');
+    }
+}
+
+function searchFAQ(query) {
+    const items = document.querySelectorAll('.faq-item');
+    items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        item.style.display = text.includes(query.toLowerCase()) ? 'block' : 'none';
+    });
+}
+</script>
+{% endblock %}

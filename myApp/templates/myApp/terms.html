@@ -1,0 +1,153 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}Terms & Conditions{% endblock %}
+
+{% block extra_css %}
+<style>
+.terms-hero {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+    text-align: center;
+    padding: 4rem 2rem;
+}
+.terms-hero h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 0.5rem; }
+.terms-hero p { opacity: 0.85; font-size: 1.1rem; }
+
+.terms-wrapper {
+    max-width: 900px;
+    margin: 3rem auto;
+    padding: 0 2rem 4rem;
+}
+.terms-card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem 2.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    border-left: 4px solid #2563eb;
+    transition: transform 0.2s;
+}
+.terms-card:hover { transform: translateX(5px); }
+.terms-card h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+.terms-card h2 i { color: #2563eb; }
+.terms-card p { color: #64748b; line-height: 1.8; margin-bottom: 0.8rem; }
+.terms-card ul { color: #64748b; line-height: 1.8; padding-left: 1.5rem; }
+.terms-card ul li { margin-bottom: 0.4rem; }
+
+.terms-footer {
+    background: #f8fafc;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    text-align: center;
+    margin-top: 2rem;
+    color: #64748b;
+}
+.terms-footer strong { color: #1e293b; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section class="terms-hero">
+    <h1>Terms & Conditions</h1>
+    <p>Please read these terms carefully before using AlphaMart</p>
+</section>
+
+<div class="terms-wrapper">
+
+    <div class="terms-card" data-aos="fade-up">
+        <h2><i class="fas fa-file-contract"></i> 1. Acceptance of Terms</h2>
+        <p>By accessing or using AlphaMart, you agree to be bound by these Terms and Conditions. If you do not agree to all terms, please do not use our platform.</p>
+    </div>
+
+    <div class="terms-card" data-aos="fade-up">
+        <h2><i class="fas fa-user-check"></i> 2. User Accounts</h2>
+        <p>To use our platform, you must:</p>
+        <ul>
+            <li>Provide accurate and complete information during registration</li>
+            <li>Maintain the security of your account</li>
+            <li>Be at least 18 years old</li>
+            <li>Have a verified email account</li>
+            <li>Provide a valid phone number and address for verification</li>
+        </ul>
+    </div>
+
+    <div class="terms-card" data-aos="fade-up">
+        <h2><i class="fas fa-gavel"></i> 3. Buying and Selling</h2>
+        <p>When using our marketplace:</p>
+        <ul>
+            <li>Sellers must provide accurate descriptions and real photos</li>
+            <li>All items must be legally sellable</li>
+            <li>Prohibited items include counterfeit goods, stolen property, and dangerous items</li>
+            <li>Buyers agree to pay the listed price</li>
+            <li>Transactions are final unless a dispute is raised through our complaint system</li>
+        </ul>
+    </div>
+
+    <div class="terms-card" data-aos="fade-up">
+        <h2><i class="fas fa-shield-alt"></i> 4. Verification and Security</h2>
+        <ul>
+            <li>All users must complete email and phone verification</li>
+            <li>Users are responsible for maintaining account security</li>
+            <li>Report any suspicious activity immediately</li>
+        </ul>
+    </div>
+
+    <div class="terms-card" data-aos="fade-up">
+        <h2><i class="fas fa-comment"></i> 5. Communication</h2>
+        <p>Use our in-app messaging for all communications. We are not responsible for communications outside our platform.</p>
+    </div>
+
+    <div class="terms-card" data-aos="fade-up">
+        <h2><i class="fas fa-credit-card"></i> 6. Payments</h2>
+        <ul>
+            <li>All payments processed securely through our platform</li>
+            <li>We charge no listing fees — sellers keep 100% of sale price</li>
+            <li>Refunds processed according to our dispute resolution policy</li>
+        </ul>
+    </div>
+
+    <div class="terms-card" data-aos="fade-up">
+        <h2><i class="fas fa-exclamation-triangle"></i> 7. Disputes and Complaints</h2>
+        <ul>
+            <li>First try to resolve directly through chat</li>
+            <li>If unresolved, file a complaint through our complaints system</li>
+            <li>We will review and mediate within 48 hours</li>
+        </ul>
+    </div>
+
+    <div class="terms-card" data-aos="fade-up">
+        <h2><i class="fas fa-ban"></i> 8. Prohibited Conduct</h2>
+        <ul>
+            <li>No fraudulent listings or misrepresentation</li>
+            <li>No harassment or abusive behavior</li>
+            <li>No attempting to bypass our payment system</li>
+            <li>No multiple accounts or impersonation</li>
+        </ul>
+    </div>
+
+    <div class="terms-card" data-aos="fade-up">
+        <h2><i class="fas fa-handshake"></i> 9. Limitation of Liability</h2>
+        <p>AlphaMart is a platform connecting buyers and sellers. We are not liable for any disputes, damages, or losses arising from transactions between users.</p>
+    </div>
+
+    <div class="terms-card" data-aos="fade-up">
+        <h2><i class="fas fa-sync-alt"></i> 10. Changes to Terms</h2>
+        <p>We may modify these terms at any time. Continued use of the platform constitutes acceptance of updated terms.</p>
+    </div>
+
+    <div class="terms-footer">
+        <strong>Last Updated: 23 February 2025</strong><br>
+        Questions? <a href="{% url 'contact' %}" style="color:#2563eb;font-weight:600;">Contact us</a>
+    </div>
+
+</div>
+{% endblock %}

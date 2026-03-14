@@ -1,0 +1,431 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}Checkout — AlphaMart{% endblock %}
+
+{% block extra_css %}
+<style>
+.checkout-page { max-width: 1100px; margin: 2.5rem auto; padding: 0 1.5rem 4rem; }
+.checkout-page h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 1.8rem; color: var(--gray-900); }
+.checkout-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: start; }
+.checkout-section {
+    background: white; border-radius: var(--radius-xl);
+    padding: 1.5rem; box-shadow: var(--shadow-sm);
+    border: 1.5px solid var(--gray-200); margin-bottom: 1.2rem;
+}
+.sec-title {
+    font-size: 1rem; font-weight: 700; color: var(--gray-900);
+    margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px;
+}
+.sec-title i { color: var(--primary); }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; margin-bottom: 4px; font-weight: 600; font-size: 0.85rem; color: var(--gray-700); }
+.form-group input, .form-group textarea, .form-group select {
+    width: 100%; padding: 0.7rem 0.9rem;
+    border: 2px solid var(--gray-200); border-radius: var(--radius);
+    font-size: 0.92rem; font-family: inherit; transition: var(--transition); box-sizing: border-box;
+}
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    border-color: var(--primary); outline: none;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+.form-group input[readonly] { background: var(--gray-50); color: var(--gray-500); }
+/* Payment tabs */
+.payment-tabs { display: flex; gap: 8px; margin-bottom: 1.2rem; flex-wrap: wrap; }
+.pay-tab {
+    flex: 1; min-width: 100px; padding: 10px;
+    border: 2px solid var(--gray-200); border-radius: var(--radius-md);
+    cursor: pointer; text-align: center; transition: var(--transition);
+    background: white; font-family: inherit;
+}
+.pay-tab:hover { border-color: var(--primary); background: var(--primary-bg); }
+.pay-tab.active { border-color: var(--primary); background: var(--primary-bg); }
+.pay-tab img { height: 28px; object-fit: contain; display: block; margin: 0 auto 4px; }
+.pay-tab .tab-name { font-size: 0.8rem; font-weight: 700; color: var(--gray-700); }
+.pay-tab.active .tab-name { color: var(--primary); }
+.pay-panel { display: none; }
+.pay-panel.active { display: block; }
+.payment-info {
+    padding: 12px 14px; border-radius: var(--radius-md);
+    font-size: 0.88rem; font-weight: 600; margin-top: 4px;
+}
+.info-esewa  { background: #f0fdf4; color: #166534; border-left: 3px solid #60bb46; }
+.info-khalti { background: #faf5ff; color: #581c87; border-left: 3px solid #5c2d91; }
+.info-cod    { background: var(--warning-bg); color: #92400e; border-left: 3px solid var(--warning); }
+.place-btn {
+    width: 100%; padding: 1rem;
+    background: var(--primary); color: white;
+    border: none; border-radius: var(--radius-md);
+    font-size: 1.05rem; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: var(--transition);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.place-btn:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+/* Summary sidebar */
+.order-summary {
+    background: white; border-radius: var(--radius-xl);
+    padding: 1.5rem; box-shadow: var(--shadow-sm);
+    border: 1.5px solid var(--gray-200);
+    position: sticky; top: 90px;
+}
+.order-summary h2 { font-size: 1.1rem; font-weight: 800; margin-bottom: 1rem; }
+.order-item {
+    display: flex; gap: 10px; padding: 10px 0;
+    border-bottom: 1px solid var(--gray-100); align-items: center;
+}
+.order-item-img {
+    width: 52px; height: 52px; border-radius: var(--radius);
+    overflow: hidden; flex-shrink: 0; background: var(--gray-100);
+}
+.order-item-img img { width: 100%; height: 100%; object-fit: cover; }
+.order-item-info h4 { font-size: 0.85rem; font-weight: 600; color: var(--gray-800); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px; }
+.order-item-info p  { font-size: 0.78rem; color: var(--gray-500); }
+.order-item-price   { font-weight: 700; font-family: 'JetBrains Mono', monospace; color: var(--primary); font-size: 0.9rem; margin-left: auto; flex-shrink: 0; }
+.sum-divider { border: none; border-top: 1px solid var(--gray-200); margin: 8px 0; }
+.sum-row { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 6px; color: var(--gray-600); }
+.sum-row.total-row { font-size: 1.05rem; font-weight: 800; color: var(--gray-900); margin-top: 8px; }
+.sum-row.total-row span:last-child { color: var(--primary); font-family: 'JetBrains Mono', monospace; }
+@media (max-width: 768px) { .checkout-layout { grid-template-columns: 1fr; } }
+
+/* Address selector */
+.addr-list { max-height: 200px; overflow-y: auto; border: 1.5px solid var(--gray-200); border-radius: var(--radius); background: white; }
+.addr-item { padding: 9px 14px; font-size: 0.88rem; cursor: pointer; border-bottom: 1px solid var(--gray-100); transition: background 0.12s; }
+.addr-item:last-child { border-bottom: none; }
+.addr-item:hover { background: var(--primary-bg); color: var(--primary); font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-page">
+    <h1><i class="fas fa-lock" style="color:var(--primary);font-size:1.4rem;"></i> Secure Checkout</h1>
+
+    <div class="checkout-layout">
+        <!-- Left: Form -->
+        <div>
+            <form method="POST" action="{% url 'checkout' %}" id="checkoutForm">
+                {% csrf_token %}
+
+                <!-- Delivery Address -->
+                <div class="checkout-section">
+                    <h3 class="sec-title"><i class="fas fa-map-marker-alt"></i> Delivery Address</h3>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" value="{{ user.get_full_name }}" readonly style="background:var(--gray-50);color:var(--gray-600);">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" value="{% if user.userprofile %}{{ user.userprofile.phone }}{% endif %}" readonly style="background:var(--gray-50);color:var(--gray-600);">
+                        </div>
+                    </div>
+
+                    <!-- Nepal Address Selector -->
+                    <div style="background:var(--primary-bg);border:1.5px solid #bfdbfe;border-radius:var(--radius-md);padding:14px;margin-bottom:12px;">
+
+                        <!-- Breadcrumb -->
+                        <div style="font-size:0.78rem;font-weight:700;color:var(--primary);margin-bottom:10px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+                            <i class="fas fa-map-pin"></i>
+                            <span id="bc_prov" style="opacity:0.45;cursor:pointer;" onclick="resetAddress()">Select Province</span>
+                            <span id="bc_sep1" style="opacity:0.3;">›</span>
+                            <span id="bc_city" style="opacity:0.3;cursor:pointer;" onclick="backToCity()">City</span>
+                            <span id="bc_sep2" style="opacity:0.3;">›</span>
+                            <span id="bc_area" style="opacity:0.3;">Area</span>
+                        </div>
+
+                        <!-- Step 1: Province -->
+                        <div id="step_province">
+                            <div style="font-size:0.8rem;font-weight:700;color:var(--gray-600);margin-bottom:6px;">Select Province</div>
+                            <div id="province_list" class="addr-list"></div>
+                        </div>
+
+                        <!-- Step 2: City -->
+                        <div id="step_city" style="display:none;">
+                            <input type="text" id="city_search" placeholder="Search city..."
+                                oninput="filterList('city')"
+                                style="width:100%;padding:7px 10px;border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:0.85rem;font-family:inherit;margin-bottom:6px;outline:none;box-sizing:border-box;">
+                            <div id="city_list" class="addr-list"></div>
+                        </div>
+
+                        <!-- Step 3: Area -->
+                        <div id="step_area" style="display:none;">
+                            <input type="text" id="area_search" placeholder="Search area..."
+                                oninput="filterList('area')"
+                                style="width:100%;padding:7px 10px;border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:0.85rem;font-family:inherit;margin-bottom:6px;outline:none;box-sizing:border-box;">
+                            <div id="area_list" class="addr-list"></div>
+                        </div>
+
+                        <!-- Summary -->
+                        <div id="addr_summary" style="display:none;align-items:center;justify-content:space-between;padding:6px 2px;">
+                            <span id="addr_summary_text" style="font-size:0.85rem;font-weight:600;color:var(--gray-800);"></span>
+                            <button type="button" onclick="resetAddress()"
+                                style="background:none;border:none;color:var(--primary);font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;margin-left:10px;">
+                                CHANGE
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Street / Tole / Landmark <span style="color:var(--gray-400);font-weight:400;font-size:0.78rem;">(optional)</span></label>
+                        <input type="text" id="street_detail" placeholder="e.g. Thamel Chowk, Near Himalayan Bank, House No. 42...">
+                    </div>
+
+                    <!-- Hidden field that collects full address string -->
+                    <input type="hidden" name="shipping_address" id="shipping_address_field" required>
+
+                    <!-- Live shipping preview -->
+                    <div id="shippingPreview" style="display:none;padding:10px 14px;border-radius:var(--radius);font-size:0.84rem;font-weight:600;margin-top:4px;"></div>
+                </div>
+
+                <!-- Payment Method -->
+                <div class="checkout-section">
+                    <h3 class="sec-title"><i class="fas fa-credit-card"></i> Payment Method</h3>
+                    <input type="hidden" name="payment_method" id="payMethod" value="esewa">
+
+                    <div class="payment-tabs">
+                        <button type="button" class="pay-tab active" onclick="selectPay('esewa')">
+                            <span style="font-size:1.4rem;display:block;margin-bottom:4px;">🟢</span>
+                            <div class="tab-name">eSewa</div>
+                        </button>
+                        <button type="button" class="pay-tab" onclick="selectPay('khalti')">
+                            <span style="font-size:1.4rem;display:block;margin-bottom:4px;">🟣</span>
+                            <div class="tab-name">Khalti</div>
+                        </button>
+                        <button type="button" class="pay-tab" onclick="selectPay('cod')">
+                            <span style="font-size:1.4rem;display:block;margin-bottom:4px;">💵</span>
+                            <div class="tab-name">Cash on Delivery</div>
+                        </button>
+                    </div>
+
+                    <div id="panel-esewa" class="pay-panel active">
+                        <div class="payment-info info-esewa">
+                            <i class="fas fa-check-circle"></i> You'll be securely redirected to <strong>eSewa</strong> to complete payment. No extra charges. Free shipping on orders ≥ Rs. 1,00,000.
+                        </div>
+                    </div>
+                    <div id="panel-khalti" class="pay-panel">
+                        <div class="payment-info info-khalti">
+                            <i class="fas fa-check-circle"></i> You'll be securely redirected to <strong>Khalti</strong> to complete payment. Free shipping on orders ≥ Rs. 1,00,000.
+                        </div>
+                    </div>
+                    <div id="panel-cod" class="pay-panel">
+                        <div class="payment-info info-cod">
+                            <i class="fas fa-info-circle"></i> <strong>Cash on Delivery</strong> — Pay when your item arrives. Available across Nepal.<br>
+                            KTM Valley: <strong>Rs. 200</strong> &nbsp;·&nbsp; Outside: <strong>Rs. 400</strong> &nbsp;·&nbsp; <strong>FREE</strong> if order ≥ Rs. 1,00,000
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="place-btn" id="placeBtn">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="btnLabel">Place Order — Rs. {{ total }}</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <h2>Your Order ({{ cart_items.count }} item{{ cart_items.count|pluralize }})</h2>
+            {% for item in cart_items %}
+            <div class="order-item">
+                <div class="order-item-img">
+                    {% with item.product.images.first as img %}
+                    {% if img %}
+                    <img src="{{ img.image.url }}" alt="{{ item.product.title }}" loading="lazy">
+                    {% else %}
+                    <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--primary);"><i class="fas fa-box"></i></div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="order-item-info">
+                    <h4>{{ item.product.title }}</h4>
+                    <p>{{ item.product.get_condition_display }}</p>
+                </div>
+                <div class="order-item-price">Rs.{{ item.product.price }}</div>
+            </div>
+            {% endfor %}
+            <hr class="sum-divider">
+            <div class="sum-row"><span>Subtotal</span><span class="mono">Rs. {{ subtotal }}</span></div>
+            <div class="sum-row">
+                <span>Shipping</span>
+                <span id="liveShipping">{% if shipping == 0 %}<span style="color:var(--success);font-weight:700;">FREE</span>{% else %}<span class="mono">Rs. {{ shipping }}</span>{% endif %}</span>
+            </div>
+            <div class="sum-row total-row">
+                <span>Total</span>
+                <span id="liveTotal">Rs. {{ total }}</span>
+            </div>
+            <div style="background:var(--success-bg);color:#15803d;padding:8px 12px;border-radius:var(--radius);font-size:0.8rem;font-weight:600;margin-top:10px;">
+                <i class="fas fa-shield-alt"></i> Secure & buyer-protected checkout
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+{% verbatim %}
+const NEPAL_DATA = {"Bagmati Province": {"Kathmandu": ["Samakhushi", "Gongabu", "Gangabu Bus Park", "Machhapokhari", "Balaju", "Nayabazar", "Machha Pokhari", "Swayambhu", "Chabahil", "Bouddha", "Jorpati", "Kapan", "Sinamangal", "Old Baneshwor", "Tinkune", "Jadibuti", "Baneshwor", "New Baneshwor", "Buddhanagar", "Anamnagar", "Thapathali", "Tripureshwor", "Teku", "Soalteemode", "Kalanki", "Kuleshwor", "Kalimati", "Sitapaila", "Kalanki Chowk", "Nayabazar Area", "Banasthali", "Maharajgunj", "Lazimpat", "Hattisar", "Kamalpokhari", "Naxal", "Gaushala", "Maitighar", "New Road", "Asan", "Indrachowk", "Jhochhe", "Basantapur", "Thamel", "Paknajol", "Jyatha", "Chhetrapati", "Putalisadak", "Dilli Bazaar", "Bagbazar", "Gyaneshwor", "Sukedhara", "Tokha Road", "Budhanilkantha Road", "Maitidevi", "Battisputali", "Koteshwor", "Subidhanagar", "Airport Area"], "Lalitpur": ["Pulchowk", "Mangalbazar", "Patan Dhoka", "Jawalakhel", "Sanepa", "Kumaripati", "Lagankhel", "Satdobato", "Ekantakuna", "Imadol", "Gwarko", "Tikathali", "Godawari", "Harisiddhi", "Sunakothi", "Lubhu", "Thecho", "Bungamati", "Thasikhel", "Kalopul", "Gusingal", "Dhobighat", "Kusunti", "Talchikhel", "Nakhu"], "Bhaktapur": ["Bhaktapur Durbar Square", "Tachapal Tole", "Dattatreya Area", "Kamalbinayak", "Kamalvinayak", "Suryabinayak", "Katunje", "Sipadol", "Balkot", "Gundu", "Dadhikot", "Sirutar", "Thimi", "Bode", "Lokanthali", "Gatthaghar", "Sano Thimi", "Sallaghari", "Duwakot", "Jhaukhel", "Nagarkot"], "Bharatpur": ["Narayanghat", "Bharatpur Chowk", "Dipendra Chowk", "Dibyanagar", "Ratnanagar", "Sauraha", "Bagmara", "Gitanagar", "Gunjanagar", "Patihani", "Sukranagar", "Piple", "Kumroj", "Mangalpur"], "Hetauda": ["Hetauda Bazaar", "Hetauda Industrial Area", "Bhimphedi Road", "Kogate", "Manahari", "Thaha", "Chisapani"], "Banepa": ["Banepa Bazaar", "Sanga", "Nala", "Dhulikhel", "Panauti", "Khopasi", "Namobuddha", "Panchkhal"]}, "Koshi Province": {"Biratnagar": ["Traffic Chowk", "Ghantaghar", "Buddha Chowk", "Mahabir Chowk", "Sahid Chowk", "Golchha Chowk", "Rangeli Road", "Kanchanbari", "Line Patti", "Anarmani", "Pokhariya Biratnagar", "Rani", "Biratnagar-2", "Biratnagar-4", "Biratnagar-7", "Biratnagar-11"], "Dharan": ["Dharan Bazaar", "BP Chowk", "Bhanu Chowk", "Bijayapur", "Chatara Road", "Phulbari", "Dharan-1", "Dharan-5", "Dharan-10", "Dharan-14"], "Itahari": ["Itahari Bazaar", "Itahari Chowk", "Duhabi", "Itahari-3", "Itahari-5", "Barahakshetra Road"], "Birtamod": ["Birtamod Bazaar", "Urbasi Chowk", "Charali", "Gaurigunj", "Arjundhara", "Bhadrapur Road", "Kankai Bazaar"], "Damak": ["Damak Bazaar", "Damak-4", "Damak-7", "Kanepokhari", "Sirsiya", "Miklajung Road"], "Dharan - Sunsari": ["Dharan Bazaar", "BP Chowk", "Chatara Area", "Inaruwa Road"], "Dhankuta": ["Dhankuta Bazaar", "Hile", "Pakhribas", "Bhedetar", "Muga"], "Ilam": ["Ilam Bazaar", "Kanyam", "Fikkal", "Ilam-4", "Ilam-6"]}, "Madhesh Province": {"Birgunj": ["New Road", "Adarshnagar", "Ghantaghar", "Buspark Area", "Powerhouse", "Maisthan", "Bhagnari Chowk", "Ramkrishna Nagar", "Ranighat", "Birgunj-3", "Birgunj-7", "Birgunj-10", "Birgunj-13", "Birgunj-17"], "Janakpur": ["Janakpur Bazaar", "Ram Mandir Area", "Dhanushadham", "Murali Chowk", "Station Road", "Viswakarma Chowk", "Mithila Nagar", "Janakpur-5", "Janakpur-8", "Janakpur-14"], "Lahan": ["Lahan Bazaar", "Bhardaha", "Lahan Chowk", "Golbazar Road"], "Kalaiya": ["Kalaiya Bazaar", "Simraungadh", "Mahagadhimai Area"], "Rajbiraj": ["Rajbiraj Bazaar", "Golbazar", "Hanumannagar Road", "Rupani"], "Malangwa": ["Malangwa Bazaar", "Lalbandi", "Bagmati Road"], "Gaur": ["Gaur Bazaar", "Chandrapur", "Rajpur Area"], "Nijgadh": ["Nijgadh Bazaar", "Nijgadh SEZ Area", "Simraungadh Road"]}, "Gandaki Province": {"Pokhara": ["Lakeside", "New Road Pokhara", "Mahendrapul", "Prithvi Chowk", "Chipledhunga", "Bagar", "Srijana Chowk", "Nadipur", "Bindabasini Area", "Matepani", "Rambazar", "Lamachaur", "Nayabazar Pokhara", "Birauta", "Gairapatan", "Damside", "Lekhnath", "Hemja", "Ranipauwa", "Pokhara-10", "Pokhara-11"], "Damauli": ["Damauli Bazaar", "Bhimad", "Shuklagandaki", "Khairenitar", "Dulegaunda"], "Besisahar": ["Besisahar Bazaar", "Khudi", "Sundarbazar", "Bhulbhule"], "Baglung": ["Baglung Bazaar", "Burtibang", "Galkot", "Kushma Road"], "Tansen": ["Tansen Bazaar", "Srinagar Area", "Rampur Palpa"], "Kawasoti": ["Kawasoti Bazaar", "Gaindakot", "Devchuli", "Pokhara Highway Junction"]}, "Lumbini Province": {"Butwal": ["Golpark", "Traffic Chowk Butwal", "Devinagar", "Milanchowk", "Kalikanagar", "Siddharth Chowk", "Sukhhanagar", "Dobhan Area", "Butwal-4", "Butwal-8", "Butwal-9", "Butwal-11"], "Bhairahawa": ["Bhairahawa Bazaar", "Airport Area Bhairahawa", "Sonauli Border", "New Bus Park Area", "Bhairahawa-4"], "Nepalgunj": ["Nepalgunj Bazaar", "Bheri Chowk", "Tribhuvan Chowk", "Airport Area Nepalgunj", "Kohalpur", "Nepalgunj-4", "Nepalgunj-7"], "Tulsipur": ["Tulsipur Bazaar", "Ghorahi Road", "Lamahi", "Tulsipur-4", "Tulsipur-8"], "Ghorahi": ["Ghorahi Bazaar", "Deukhuri", "Lamahi", "Satbariya", "Ghorahi-5", "Ghorahi-12"], "Tilottama": ["Manigram", "Sainamaina", "Tilottama Bazaar", "Devdaha Road"], "Taulihawa": ["Taulihawa Bazaar", "Krishnanagar", "Banganga", "Lumbini Road"], "Bardaghat": ["Bardaghat Bazaar", "Sunwal", "Pratappur"]}, "Karnali Province": {"Birendranagar": ["Surkhet Bazaar", "Birendranagar Chowk", "Airport Area Surkhet", "Panchapuri Area", "Badi", "Lekbesi", "Birendranagar-4", "Birendranagar-6"], "Ghorahi - Dang": ["Ghorahi Bazaar", "Deukhuri", "Satbariya", "Lamahi Road"], "Tulsipur - Dang": ["Tulsipur Bazaar", "Dang Road", "Lamahi Dang"], "Jumla": ["Jumla Bazaar", "Chandannath Area", "Khalanga Jumla"]}, "Sudurpashchim Province": {"Dhangadhi": ["Dhangadhi Bazaar", "Chauraha", "Bishalnagar Road", "Gauriganga", "Tikapur Road", "Lamki Road", "Godawari Kailali", "Dhangadhi-3", "Dhangadhi-7", "Dhangadhi-12"], "Mahendranagar": ["Mahendranagar Bazaar", "Bhimdatta Chowk", "Dodhara Area", "Krishnapur Road", "Belauri Road"], "Tikapur": ["Tikapur Bazaar", "Rajapur Road", "Lamki Area", "Chuha Area"], "Dipayal": ["Dipayal Bazaar", "Silgadhi", "Shikhar Area"], "Dadeldhura": ["Dadeldhura Bazaar", "Amargadhi", "Aalital Area"], "Ghodaghodi": ["Ghodaghodi Bazaar", "Chisapani", "Kohalpur Junction", "Lamki Road"]}};
+{% endverbatim %}
+
+const SUBTOTAL   = {{ subtotal }};
+const IN_VALLEY  = {{ in_valley|yesno:"true,false" }};
+const THRESHOLD  = 100000;   // Rs. 1,00,000 — free delivery
+
+// ── Address selector (Province → City → Area) ───────────────────
+const KTM_VALLEY = ['kathmandu','lalitpur','bhaktapur'];
+let _prov = '', _city = '', _area = '';
+let _cities = [], _areas = [];
+
+function initProvinces() {
+    const list = document.getElementById('province_list');
+    Object.keys(NEPAL_DATA).sort().forEach(p => {
+        const d = document.createElement('div');
+        d.className = 'addr-item';
+        d.textContent = p;
+        d.onclick = () => pickProvince(p);
+        list.appendChild(d);
+    });
+}
+
+function pickProvince(p) {
+    _prov = p; _city = ''; _area = '';
+    setBreadcrumb(p, null, null);
+    _cities = Object.keys(NEPAL_DATA[p]).sort();
+    renderList('city_list', _cities, pickCity);
+    show('step_city'); hide('step_province'); hide('step_area'); hide('addr_summary');
+    document.getElementById('city_search').value = '';
+    clearPreview();
+}
+
+function pickCity(c) {
+    _city = c; _area = '';
+    setBreadcrumb(_prov, c, null);
+    _areas = NEPAL_DATA[_prov][c];
+    renderList('area_list', _areas, pickArea);
+    show('step_area'); hide('step_city'); hide('step_province'); hide('addr_summary');
+    document.getElementById('area_search').value = '';
+    updateShippingPreview(c);
+    updateAddress();
+}
+
+function pickArea(a) {
+    _area = a;
+    setBreadcrumb(_prov, _city, a);
+    hide('step_area'); hide('step_province'); hide('step_city');
+    // Show summary
+    const s = document.getElementById('addr_summary');
+    document.getElementById('addr_summary_text').textContent = _prov + ', ' + _city + ', ' + a;
+    s.style.display = 'flex';
+    updateAddress();
+}
+
+function backToCity() {
+    if (!_prov) return;
+    _city = ''; _area = '';
+    setBreadcrumb(_prov, null, null);
+    renderList('city_list', _cities, pickCity);
+    show('step_city'); hide('step_area'); hide('step_province'); hide('addr_summary');
+    document.getElementById('city_search').value = '';
+    clearPreview(); updateAddress();
+}
+
+function resetAddress() {
+    _prov = ''; _city = ''; _area = '';
+    setBreadcrumb(null, null, null);
+    show('step_province'); hide('step_city'); hide('step_area'); hide('addr_summary');
+    clearPreview(); updateAddress();
+}
+
+function renderList(id, items, fn) {
+    const el = document.getElementById(id);
+    el.innerHTML = '';
+    items.forEach(item => {
+        const d = document.createElement('div');
+        d.className = 'addr-item';
+        d.textContent = item;
+        d.onclick = () => fn(item);
+        el.appendChild(d);
+    });
+}
+
+function filterList(type) {
+    const q = document.getElementById(type + '_search').value.toLowerCase();
+    const src = type === 'city' ? _cities : _areas;
+    const fn  = type === 'city' ? pickCity : pickArea;
+    renderList(type + '_list', src.filter(x => x.toLowerCase().includes(q)), fn);
+}
+
+function setBreadcrumb(p, c, a) {
+    const bp = document.getElementById('bc_prov');
+    const bc = document.getElementById('bc_city');
+    const ba = document.getElementById('bc_area');
+    bp.textContent = p || 'Select Province'; bp.style.opacity = p ? '1' : '0.45';
+    bc.textContent = c || 'City';            bc.style.opacity = c ? '1' : '0.3';
+    ba.textContent = a || 'Area';            ba.style.opacity = a ? '1' : '0.3';
+}
+
+function show(id) { document.getElementById(id).style.display = 'block'; }
+function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+function clearPreview() {
+    document.getElementById('shippingPreview').style.display = 'none';
+}
+
+function updateAddress() {
+    const extra = (document.getElementById('street_detail')?.value || '').trim();
+    const parts = [extra, _area, _city, _prov].filter(Boolean);
+    document.getElementById('shipping_address_field').value = parts.join(', ');
+}
+
+function updateShippingPreview(city) {
+    const isValley = KTM_VALLEY.some(v => city.toLowerCase().includes(v));
+    window._inValley = isValley;
+    const fee = shippingFor(document.getElementById('payMethod')?.value || 'cod', isValley);
+    const el  = document.getElementById('shippingPreview');
+    el.style.display = 'block';
+    if (fee === 0) {
+        el.style.cssText = 'display:block;padding:10px 14px;border-radius:8px;font-size:0.84rem;font-weight:600;margin-top:4px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;';
+        el.innerHTML = '<i class="fas fa-truck"></i> <strong>FREE Delivery</strong> to ' + city;
+    } else {
+        el.style.cssText = 'display:block;padding:10px 14px;border-radius:8px;font-size:0.84rem;font-weight:600;margin-top:4px;background:var(--primary-bg);color:var(--primary);border:1px solid #bfdbfe;';
+        el.innerHTML = '<i class="fas fa-truck"></i> Delivery to <strong>' + city + '</strong>: <strong>Rs. ' + fee + '</strong>' +
+            (isValley ? ' (KTM Valley)' : ' (Outside Valley)') + ' &nbsp;·&nbsp; FREE above Rs. 1,00,000';
+    }
+}
+
+function selectPay(method) {
+    document.getElementById('payMethod').value = method;
+    document.querySelectorAll('.pay-tab').forEach(t  => t.classList.remove('active'));
+    document.querySelectorAll('.pay-panel').forEach(p => p.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.getElementById('panel-' + method).classList.add('active');
+
+    // Recalculate shipping & total live
+    const shipping = shippingFor(method, window._inValley);
+    const total    = SUBTOTAL + shipping;
+
+    const shipEl = document.getElementById('liveShipping');
+    const totEl  = document.getElementById('liveTotal');
+    const btnEl  = document.getElementById('btnLabel');
+
+    if (shipEl) shipEl.innerHTML = shipping === 0
+        ? '<span style="color:var(--success);font-weight:700;">FREE</span>'
+        : '<span class="mono">Rs. ' + shipping + '</span>';
+
+    if (totEl) totEl.textContent  = 'Rs. ' + total.toLocaleString('en-IN');
+    if (btnEl) btnEl.textContent  = 'Place Order — Rs. ' + total.toLocaleString('en-IN');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initProvinces();
+    document.getElementById('street_detail').addEventListener('input', updateAddress);
+});
+
+document.getElementById('checkoutForm').addEventListener('submit', function(e) {
+    if (!_area) {
+        e.preventDefault();
+        alert('Please select your delivery location: Province → City → Area');
+        resetAddress();
+        return false;
+    }
+});
+</script>
+{% endblock %}

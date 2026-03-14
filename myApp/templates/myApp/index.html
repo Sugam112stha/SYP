@@ -1,0 +1,370 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}Home{% endblock %}
+{% block nav_home %}class="active"{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Hero Search */
+.hero-search-box {
+    display: flex; gap: 8px; align-items: center;
+    background: white; padding: 6px 6px 6px 16px;
+    border-radius: 50px;
+    box-shadow: 0 8px 32px rgba(37,99,235,0.15);
+    margin: 1.5rem 0;
+}
+.hero-search-box input {
+    flex: 1; border: none; outline: none;
+    font-size: 0.95rem; font-family: inherit;
+    background: transparent; color: #1e293b;
+    min-width: 0;
+}
+.hero-search-box button {
+    background: var(--primary); color: white;
+    border: none; padding: 0.65rem 1.4rem;
+    border-radius: 50px; font-weight: 700;
+    cursor: pointer; white-space: nowrap;
+    font-family: inherit; transition: var(--transition);
+}
+.hero-search-box button:hover { background: var(--primary-dark); }
+/* Nepal payment badges in hero */
+.payment-trust {
+    display: flex; gap: 8px; align-items: center;
+    flex-wrap: wrap; margin-top: 1rem;
+}
+.payment-trust span {
+    font-size: 0.78rem; color: var(--gray-500); font-weight: 600;
+}
+.esewa-tag  { background: #60bb46; color: white; padding: 2px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+.khalti-tag { background: #5c2d91; color: white; padding: 2px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+.cod-tag    { background: #d97706; color: white; padding: 2px 10px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── Hero ─────────────────────────────────────────────────── -->
+<section class="hero-section">
+<div class="hero">
+    <div class="hero-content" data-aos="fade-up">
+        <div class="hero-badge"><i class="fas fa-bolt"></i> Nepal's Trusted Electronics Marketplace</div>
+        <h1>Buy & Sell <span class="gradient-text">Premium Electronics</span> Safely in Nepal</h1>
+        <p>Every item verified • Real photos • eSewa & Khalti payments • Delivery across Nepal</p>
+
+        <!-- Stats -->
+        <div class="hero-stats">
+            <div class="stat-item">
+                <h3 class="count-up" data-target="15000">0</h3>
+                <p>Items Sold</p>
+            </div>
+            <div class="stat-item">
+                <h3 class="count-up" data-target="98">0</h3>
+                <p>% Happy Buyers</p>
+            </div>
+            <div class="stat-item">
+                <h3>77</h3>
+                <p>Districts</p>
+            </div>
+        </div>
+
+        <!-- Hero Search -->
+        <form method="GET" action="{% url 'products' %}" class="hero-search-box">
+            <i class="fas fa-search" style="color:#94a3b8;flex-shrink:0;"></i>
+            <input type="text" name="q" placeholder="Search iPhone, MacBook, Camera...">
+            <button type="submit">Search</button>
+        </form>
+
+        <!-- CTAs -->
+        <div class="hero-actions">
+            <a href="{% url 'products' %}" class="btn-primary btn-large">
+                <i class="fas fa-store"></i> Browse Products
+            </a>
+            <a href="{% url 'sell' %}" class="btn-outline btn-large">
+                <i class="fas fa-plus-circle"></i> Sell Your Device
+            </a>
+        </div>
+
+        <!-- Payment Trust -->
+        <div class="payment-trust">
+            <span>Payments:</span>
+            <span class="esewa-tag">eSewa</span>
+            <span class="khalti-tag">Khalti</span>
+            <span class="cod-tag">Cash on Delivery</span>
+        </div>
+    </div>
+
+    <!-- Slideshow -->
+    <div class="hero-image" data-aos="fade-left">
+        <div class="hero-slideshow">
+            {% for product in slideshow_products %}
+            <div class="slide {% if forloop.first %}active{% endif %}">
+                {% with product.images.first as img %}
+                {% if img %}
+                <img src="{{ img.image.url }}" alt="{{ product.title }}" style="width:100%;height:100%;object-fit:cover;">
+                {% else %}
+                <div style="width:100%;height:100%;background:var(--primary-bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;">
+                    <i class="fas fa-mobile-alt" style="font-size:3rem;color:var(--primary);opacity:0.3;"></i>
+                    <span style="font-size:0.9rem;font-weight:600;color:var(--primary);opacity:0.5;">{{ product.title|truncatechars:22 }}</span>
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+            {% empty %}
+            <div class="slide active">
+                <img src="https://images.unsplash.com/photo-1498049794561-7780e7231661?w=700&q=80&fit=crop" alt="Electronics" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+            {% endfor %}
+            {% if slideshow_products.count > 1 %}
+            <div class="slide-dots">
+                {% for product in slideshow_products %}
+                <button class="dot {% if forloop.first %}active{% endif %}" onclick="goToSlide({{ forloop.counter0 }})"></button>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Floating cards -->
+        <div class="floating-card card-1">
+            <i class="fas fa-check-circle" style="color:#16a34a;"></i>
+            <div>
+                <h4>{{ latest_product.title|default:"New Listing!"|truncatechars:20 }}</h4>
+                <p>Newly listed • Verified</p>
+            </div>
+        </div>
+        <div class="floating-card card-2">
+            <i class="fas fa-star" style="color:#fbbf24;"></i>
+            <div>
+                <h4 class="mono">{{ total_products }} Listing{{ total_products|pluralize }}</h4>
+                <p>Across Nepal</p>
+            </div>
+        </div>
+    </div>
+</div><!-- end .hero grid -->
+</section><!-- end .hero-section -->
+
+<!-- ── Trust Features ─────────────────────────────────────────── -->
+<div style="background:white;border-bottom:1px solid var(--gray-200);">
+<div class="trust-features">
+    <div class="feature-item" data-aos="fade-up">
+        <div class="feature-icon"><i class="fas fa-id-card"></i></div>
+        <h3>Identity Verified</h3>
+        <p>Email, phone & address verification for every user</p>
+    </div>
+    <div class="feature-item" data-aos="fade-up" data-aos-delay="100">
+        <div class="feature-icon"><i class="fas fa-camera"></i></div>
+        <h3>Real Photos</h3>
+        <p>Sellers upload actual photos — no stock images</p>
+    </div>
+    <div class="feature-item" data-aos="fade-up" data-aos-delay="200">
+        <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+        <h3>eSewa & Khalti</h3>
+        <p>Pay securely with Nepal's top digital wallets</p>
+    </div>
+    <div class="feature-item" data-aos="fade-up" data-aos-delay="300">
+        <div class="feature-icon"><i class="fas fa-truck"></i></div>
+        <h3>Nationwide Delivery</h3>
+        <p>Delivery across all 77 districts of Nepal</p>
+    </div>
+</div><!-- .trust-features -->
+</div><!-- end trust white bg -->
+
+<!-- ── Categories ─────────────────────────────────────────────── -->
+<section class="section-wrap">
+    <div class="section-header">
+        <div>
+            <span class="section-subtitle">Shop by Category</span>
+            <h2>Popular Categories</h2>
+        </div>
+        <a href="{% url 'categories' %}" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="category-grid">
+        {% for cat in categories %}
+        <a href="{% url 'products' %}?category={{ cat.slug }}" class="category-card" data-aos="zoom-in">
+            <div class="category-icon"><i class="fas {{ cat.icon|default:'fa-box' }}"></i></div>
+            <h3>{{ cat.name }}</h3>
+            <p>{{ cat.product_set.count }} listing{{ cat.product_set.count|pluralize }}</p>
+            <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+        </a>
+        {% empty %}
+        {% for icon, name, slug in icon_cats %}
+        <a href="{% url 'products' %}?category={{ slug }}" class="category-card" data-aos="zoom-in">
+            <div class="category-icon"><i class="fas {{ icon }}"></i></div>
+            <h3>{{ name }}</h3>
+            <p>Browse listings</p>
+            <span class="arrow"><i class="fas fa-arrow-right"></i></span>
+        </a>
+        {% endfor %}
+        {% endfor %}
+    </div>
+</section>
+
+<!-- ── Featured Products ───────────────────────────────────────── -->
+<section class="section-wrap">
+    <div class="section-header">
+        <div>
+            <span class="section-subtitle">Just Added</span>
+            <h2>Recent Listings</h2>
+        </div>
+        <a href="{% url 'products' %}" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="product-grid">
+        {% for product in featured_products %}
+        <div class="product-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+            {% if product.status == 'sold' %}<div class="product-badge sold">SOLD</div>{% endif %}
+            <div class="product-image">
+                <a href="{% url 'product_detail' product.pk %}" style="display:block;width:100%;height:100%;">
+                {% with product.images.first as img %}
+                {% if img %}
+                <img src="{{ img.image.url }}" alt="{{ product.title }}" loading="lazy">
+                {% else %}
+                <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--primary-bg);gap:8px;">
+                    <i class="fas fa-mobile-alt" style="font-size:2.2rem;color:var(--primary);opacity:0.35;"></i>
+                    <span style="font-size:0.75rem;color:var(--gray-400);font-weight:500;">No photo</span>
+                </div>
+                {% endif %}
+                {% endwith %}
+                </a>
+                <span class="image-count"><i class="fas fa-camera"></i> {{ product.images.count }}</span>
+                <span class="condition-chip cond-{{ product.condition }}">{{ product.get_condition_display }}</span>
+            </div>
+            <div class="product-info">
+                <div class="product-category">{{ product.category.name|default:"Electronics" }}</div>
+                <h3 class="product-title">
+                    <a href="{% url 'product_detail' product.pk %}">{{ product.title }}</a>
+                </h3>
+                <div class="product-price">
+                    <span class="current-price mono">Rs. {{ product.price }}</span>
+                </div>
+                <div class="product-seller">
+                    <div class="seller-avatar-sm">{{ product.seller.first_name|first|upper }}</div>
+                    <span>{{ product.seller.get_full_name }}</span>
+                    <span class="verified-icon"><i class="fas fa-check-circle"></i></span>
+                </div>
+                {% if product.status == 'available' %}
+                <a href="{% url 'add_to_cart' product.pk %}" class="add-to-cart-btn">
+                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                </a>
+                {% else %}
+                <button class="add-to-cart-btn" disabled>Sold Out</button>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column:1/-1;" class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h3>No products yet</h3>
+            <p>Be the first to <a href="{% url 'sell' %}" style="color:var(--primary);">list something!</a></p>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<!-- ── Sell Promo Banner ───────────────────────────────────────── -->
+<div class="section-wrap" style="padding-top:0;">
+    <div class="promo-inner">
+        <div class="promo-content" data-aos="fade-right">
+            <span class="promo-tag">💰 Sell Fast</span>
+            <h2>Sell Your Old<br>Device Today</h2>
+            <p>Get top price for your used electronics — list free in minutes!</p>
+            <ul class="promo-list">
+                <li>
+                    <div class="icon-circle"><i class="fas fa-tag"></i></div>
+                    Free listing — no hidden fees
+                </li>
+                <li>
+                    <div class="icon-circle"><i class="fas fa-user-check"></i></div>
+                    Verified buyers only
+                </li>
+                <li>
+                    <div class="icon-circle"><i class="fas fa-shield-alt"></i></div>
+                    Safe eSewa & Khalti payments
+                </li>
+            </ul>
+            <a href="{% url 'sell' %}" class="promo-btn">
+                <i class="fas fa-plus-circle"></i> Start Selling Now
+            </a>
+        </div>
+        <div class="promo-image" data-aos="fade-left">
+            <img src="{% static 'images/sell-banner.jpg' %}" alt="Sell your device">
+        </div>
+    </div>
+</div>
+
+<!-- ── Testimonials ────────────────────────────────────────────── -->
+<section class="section-wrap">
+    <div class="section-header">
+        <div>
+            <span class="section-subtitle">Happy Users</span>
+            <h2>Trusted by Thousands</h2>
+        </div>
+    </div>
+    <div class="testimonial-grid">
+        <div class="testimonial-card" data-aos="fade-up">
+            <div class="testimonial-rating">
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+            </div>
+            <p class="testimonial-text">"Sold my MacBook in 2 days! Payment through eSewa was instant and secure. Alpha Mart is the best platform in Nepal!"</p>
+            <div class="testimonial-author">
+                <img src="https://placehold.co/44x44/2563eb/white?text=SK" alt="Suman">
+                <div><h4>Suman Karki</h4><p>Verified Seller, Kathmandu</p></div>
+            </div>
+        </div>
+        <div class="testimonial-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="testimonial-rating">
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+            </div>
+            <p class="testimonial-text">"Bought a camera lens in Pokhara. The real photos requirement gave me full confidence. No surprises — exactly as listed!"</p>
+            <div class="testimonial-author">
+                <img src="https://placehold.co/44x44/16a34a/white?text=PR" alt="Priya">
+                <div><h4>Priya Rai</h4><p>Verified Buyer, Pokhara</p></div>
+            </div>
+        </div>
+        <div class="testimonial-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="testimonial-rating">
+                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+            </div>
+            <p class="testimonial-text">"Got Cash on Delivery to Chitwan! The team is very responsive. Will definitely use Alpha Mart again for buying electronics."</p>
+            <div class="testimonial-author">
+                <img src="https://placehold.co/44x44/d97706/white?text=RT" alt="Ram">
+                <div><h4>Ram Thapa</h4><p>Verified Buyer, Chitwan</p></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Count-up animation ─────────────────────────────────────────
+function countUp(el) {
+    const target = parseInt(el.dataset.target);
+    const duration = 1800;
+    const step = target / (duration / 16);
+    let current = 0;
+    const timer = setInterval(() => {
+        current += step;
+        if (current >= target) { current = target; clearInterval(timer); }
+        el.textContent = target >= 1000 ? (current / 1000).toFixed(1) + 'K+' : Math.floor(current) + (target === 98 ? '%' : '');
+    }, 16);
+}
+const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { countUp(e.target); observer.unobserve(e.target); } });
+});
+document.querySelectorAll('.count-up').forEach(el => observer.observe(el));
+
+// ── Slideshow ──────────────────────────────────────────────────
+let currentSlide = 0;
+const slides = document.querySelectorAll('.slide');
+const dots   = document.querySelectorAll('.dot');
+function goToSlide(n) {
+    if (!slides.length) return;
+    slides.forEach(s => s.classList.remove('active'));
+    dots.forEach(d => d.classList.remove('active'));
+    currentSlide = (n + slides.length) % slides.length;
+    slides[currentSlide].classList.add('active');
+    if (dots[currentSlide]) dots[currentSlide].classList.add('active');
+}
+if (slides.length > 1) setInterval(() => goToSlide(currentSlide + 1), 3500);
+</script>
+{% endblock %}

@@ -1,0 +1,294 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Alpha Mart{% endblock %} — Nepal's Second-Hand Electronics</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    {% block extra_css %}{% endblock %}
+
+</head>
+<body>
+
+<!-- ── Django Messages ─────────────────────────────────────────── -->
+{% if messages %}
+<div class="messages-container" id="messagesContainer">
+    {% for message in messages %}
+    <div class="message-toast {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% else %}success{% endif %}">
+        <i class="fas {% if message.tags == 'error' %}fa-times-circle{% elif message.tags == 'warning' %}fa-exclamation-triangle{% elif message.tags == 'info' %}fa-info-circle{% else %}fa-check-circle{% endif %}"></i>
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+<script>setTimeout(()=>{const c=document.getElementById('messagesContainer');if(c)c.remove();},4500);</script>
+{% endif %}
+
+<!-- ── Preloader ───────────────────────────────────────────────── -->
+<div class="preloader" id="preloader"><div class="loader"></div></div>
+
+<!-- ── Navbar ─────────────────────────────────────────────────── -->
+<nav class="navbar">
+    <div class="nav-container">
+
+        <!-- Logo -->
+        <a href="{% url 'index' %}" class="logo">
+            <div class="logo-icon-wrap"><i class="fas fa-bolt"></i></div>
+            <span>Alpha<span class="gradient-text">Mart</span></span>
+        </a>
+
+        <!-- Hamburger -->
+        <button class="menu-toggle" id="mobileMenu" aria-label="Menu">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Nav Links -->
+        <ul class="nav-menu" id="navMenu">
+            <li><a href="{% url 'index' %}"      {% block nav_home %}{% endblock %}>Home</a></li>
+            <li><a href="{% url 'products' %}"   {% block nav_products %}{% endblock %}>Products</a></li>
+            <li><a href="{% url 'categories' %}" {% block nav_categories %}{% endblock %}>Categories</a></li>
+            <li><a href="{% url 'deals' %}"      {% block nav_deals %}{% endblock %}>Deals</a></li>
+            <li><a href="{% url 'about' %}"      {% block nav_about %}{% endblock %}>About</a></li>
+            <li><a href="{% url 'contact' %}"    {% block nav_contact %}{% endblock %}>Contact</a></li>
+            <!-- Mobile-only auth links -->
+            {% if not user.is_authenticated %}
+            <li style="border-top:1px solid #e2e8f0;margin-top:8px;padding-top:8px;">
+                <a href="{% url 'login' %}">Sign In</a>
+            </li>
+            <li><a href="{% url 'register' %}" style="color:#2563eb;font-weight:700;">Join Free</a></li>
+            {% endif %}
+        </ul>
+
+        <!-- Right Actions -->
+        <div class="nav-actions">
+            <button class="search-toggle" id="searchToggle" title="Search">
+                <i class="fas fa-search"></i>
+            </button>
+
+            <!-- Cart -->
+            {% if user.is_authenticated %}
+            <a href="{% url 'messages' %}" class="cart-icon" title="Messages" style="position:relative;">
+                <i class="fas fa-comments"></i>
+                {% if unread_msg_count %}
+                <span class="cart-count" style="background:var(--success);">{{ unread_msg_count }}</span>
+                {% endif %}
+            </a>
+            {% endif %}
+            <a href="{% url 'cart' %}" class="cart-icon" title="Cart">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="cart-count">{{ cart_count|default:"0" }}</span>
+            </a>
+
+            {% if user.is_authenticated %}
+            <!-- User Dropdown -->
+            <div class="user-dropdown" id="userDropdown">
+                <button class="user-btn" type="button" onclick="toggleDropdown(event)">
+                    <div class="user-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+                    <span>{{ user.first_name }}</span>
+                    <i class="fas fa-chevron-down" id="chevronIcon" style="font-size:0.6rem;margin-left:2px;transition:transform 0.25s;color:var(--gray-400);"></i>
+                </button>
+
+                <div class="dd-panel" id="dropdownMenu">
+
+                    <!-- Gradient Header -->
+                    <div class="dd-head">
+                        <div class="dd-head-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+                        <div class="dd-head-info">
+                            <div class="dd-head-name">{{ user.get_full_name }}</div>
+                            <div class="dd-head-email">{{ user.email }}</div>
+                        </div>
+                        {% if request.user.userprofile.role == 'seller' %}
+                        <span class="dd-role-chip dd-chip-seller">🏪 Seller</span>
+                        {% else %}
+                        <span class="dd-role-chip dd-chip-buyer">🛒 Buyer</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Role Switcher -->
+                    <div class="dd-role-section">
+                        <span class="dd-role-title">Switch Role</span>
+                        <div class="dd-role-pills">
+                            <form method="POST" action="{% url 'toggle_role' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="role" value="buyer">
+                                <button type="submit" class="dd-pill {% if request.user.userprofile.role == 'buyer' %}dd-pill-on-buyer{% endif %}">🛒 Buyer</button>
+                            </form>
+                            <form method="POST" action="{% url 'toggle_role' %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="role" value="seller">
+                                <button type="submit" class="dd-pill {% if request.user.userprofile.role == 'seller' %}dd-pill-on-seller{% endif %}">🏪 Seller</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Nav Links -->
+                    <div class="dd-links">
+                        <a href="{% url 'dashboard' %}" class="dd-link">
+                            <span class="dd-link-ico dd-ico-blue"><i class="fas fa-th-large"></i></span>
+                            <span class="dd-link-text">Dashboard</span>
+                        </a>
+                        <a href="{% url 'dashboard' %}" onclick="sessionStorage.setItem('dash_tab','profile')" class="dd-link">
+                            <span class="dd-link-ico dd-ico-indigo"><i class="fas fa-user-edit"></i></span>
+                            <span class="dd-link-text">Edit Profile</span>
+                        </a>
+                        <a href="{% url 'dashboard' %}" onclick="sessionStorage.setItem('dash_tab','orders')" class="dd-link">
+                            <span class="dd-link-ico dd-ico-violet"><i class="fas fa-box"></i></span>
+                            <span class="dd-link-text">My Orders</span>
+                        </a>
+                        <a href="{% url 'cart' %}" class="dd-link">
+                            <span class="dd-link-ico dd-ico-cyan"><i class="fas fa-shopping-cart"></i></span>
+                            <span class="dd-link-text">My Cart</span>
+                            {% if cart_count %}<span class="dd-count">{{ cart_count }}</span>{% endif %}
+                        </a>
+                        <a href="{% url 'dashboard' %}" onclick="sessionStorage.setItem('dash_tab','listings')" class="dd-link">
+                            <span class="dd-link-ico dd-ico-green"><i class="fas fa-tag"></i></span>
+                            <span class="dd-link-text">My Listings</span>
+                        </a>
+                        <a href="{% url 'sell' %}" class="dd-link">
+                            <span class="dd-link-ico dd-ico-orange"><i class="fas fa-plus-circle"></i></span>
+                            <span class="dd-link-text">List an Item</span>
+                        </a>
+                        <a href="{% url 'complaints' %}" class="dd-link">
+                            <span class="dd-link-ico dd-ico-gray"><i class="fas fa-flag"></i></span>
+                            <span class="dd-link-text">Report Issue</span>
+                        </a>
+                    </div>
+
+                    <!-- Footer: Logout -->
+                    <div class="dd-footer">
+                        <a href="{% url 'logout' %}" class="dd-link dd-link-danger">
+                            <span class="dd-link-ico dd-ico-red"><i class="fas fa-sign-out-alt"></i></span>
+                            <span class="dd-link-text">Sign Out</span>
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+
+                        {% else %}
+            <div class="auth-buttons">
+                <a href="{% url 'login' %}"    class="btn-outline">Sign In</a>
+                <a href="{% url 'register' %}" class="btn-primary"><i class="fas fa-user-plus"></i> Join Free</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar" id="searchBar">
+        <div class="search-container">
+            <form method="GET" action="{% url 'products' %}" style="display:flex;width:100%;gap:8px;align-items:center;">
+                <i class="fas fa-search"></i>
+                <input type="text" name="q" placeholder="Search iPhones, MacBooks, cameras..." value="{{ request.GET.q }}">
+                <button type="submit" class="btn-primary" style="white-space:nowrap;">Search</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+<!-- ── Page Content ────────────────────────────────────────────── -->
+{% block content %}{% endblock %}
+
+<!-- ── Footer ─────────────────────────────────────────────────── -->
+<footer class="footer">
+    <div class="footer-content">
+        <div>
+            <a href="{% url 'index' %}" class="footer-logo">
+                <i class="fas fa-bolt"></i>
+                <span>Alpha<span class="gradient-text">Mart</span></span>
+            </a>
+            <p class="footer-about">Nepal's trusted marketplace for premium second-hand electronics. Every item verified, every seller vetted. Safe trading across all 77 districts.</p>
+            <div class="social-links">
+                <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" title="TikTok"><i class="fab fa-tiktok"></i></a>
+            </div>
+        </div>
+        <div class="footer-col">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="{% url 'about' %}">About Us</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
+                <li><a href="{% url 'faq' %}">FAQ</a></li>
+                <li><a href="{% url 'terms' %}">Terms & Conditions</a></li>
+                <li><a href="{% url 'sell' %}">Sell Your Device</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Categories</h4>
+            <ul>
+                <li><a href="{% url 'products' %}?category=smartphones">Smartphones</a></li>
+                <li><a href="{% url 'products' %}?category=laptops">Laptops</a></li>
+                <li><a href="{% url 'products' %}?category=cameras">Cameras</a></li>
+                <li><a href="{% url 'products' %}?category=audio">Audio</a></li>
+                <li><a href="{% url 'products' %}?category=gaming">Gaming</a></li>
+            </ul>
+        </div>
+        <div class="footer-col">
+            <h4>Contact Info</h4>
+            <div class="contact-item"><i class="fas fa-map-marker-alt"></i> Kathmandu, Nepal</div>
+            <div class="contact-item"><i class="fas fa-envelope"></i> support@alphamart.com.np</div>
+            <div class="contact-item"><i class="fas fa-phone"></i> +977-01-4567890</div>
+            <div class="contact-item"><i class="fas fa-clock"></i> Sun–Fri, 9am–6pm</div>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p>&copy; 2082 BS / 2025 AD — Alpha Mart Nepal. Built by Alpha Coders.</p>
+        <div class="nepali-payment">
+            <span class="esewa-badge">eSewa</span>
+            <span class="khalti-badge">Khalti</span>
+            <i class="fas fa-university" title="Bank Transfer" style="color:#94a3b8;"></i>
+        </div>
+    </div>
+</footer>
+
+<button class="back-to-top" id="backToTop" title="Back to top">
+    <i class="fas fa-arrow-up"></i>
+</button>
+
+<!-- ── Scripts ─────────────────────────────────────────────────── -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="{% static 'js/main.js' %}"></script>
+{% block extra_js %}{% endblock %}
+<script>
+function toggleDropdown(e) {
+    e.stopPropagation();
+    const panel   = document.getElementById('dropdownMenu');
+    const btn     = document.querySelector('.user-btn');
+    const chevron = document.getElementById('chevronIcon');
+    const isOpen  = panel.classList.contains('open');
+    panel.classList.toggle('open');
+    btn.classList.toggle('open');
+    chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+document.addEventListener('click', function(e) {
+    const wrap = document.getElementById('userDropdown');
+    if (wrap && !wrap.contains(e.target)) {
+        document.getElementById('dropdownMenu')?.classList.remove('open');
+        document.querySelector('.user-btn')?.classList.remove('open');
+        const c = document.getElementById('chevronIcon');
+        if (c) c.style.transform = 'rotate(0deg)';
+    }
+});
+
+// Handle sessionStorage tab switching on dashboard
+if (window.location.pathname.includes('/dashboard')) {
+    const tab = sessionStorage.getItem('dash_tab');
+    if (tab) {
+        sessionStorage.removeItem('dash_tab');
+        const tabs = { listings:0, orders:1, profile:2 };
+        const idx  = tabs[tab];
+        if (idx !== undefined) {
+            const btns = document.querySelectorAll('.tab-btn');
+            if (btns[idx]) switchTab(tab, btns[idx]);
+        }
+    }
+}
+</script>
+</body>
+</html>

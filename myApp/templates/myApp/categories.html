@@ -1,0 +1,132 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}Categories{% endblock %}
+{% block nav_categories %}class="active"{% endblock %}
+
+{% block extra_css %}
+<style>
+.page-hero{background:linear-gradient(135deg,#2563eb 0%,#1d4ed8 100%);color:white;padding:4rem 2rem;text-align:center}
+.page-hero h1{font-size:3rem;margin-bottom:1rem}
+.page-hero p{font-size:1.2rem;opacity:0.9}
+.categories-main{max-width:1200px;margin:3rem auto;padding:0 2rem}
+.category-big-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:2rem}
+.category-big-card{background:white;border-radius:2rem;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);transition:all 0.3s;text-decoration:none;color:inherit;display:block;border:2px solid transparent}
+.category-big-card:hover{transform:translateY(-8px);border-color:#2563eb;box-shadow:0 20px 40px rgba(37,99,235,0.15)}
+.cat-banner{height:140px;background:linear-gradient(135deg,#eff6ff,#dbeafe);display:flex;align-items:center;justify-content:center;font-size:4rem;color:#2563eb}
+.cat-body{padding:1.5rem}
+.cat-body h3{font-size:1.4rem;font-weight:700;margin-bottom:0.5rem;color:#0f172a}
+.cat-body p{color:#64748b;font-size:0.9rem;margin-bottom:1rem}
+.cat-stat-num{font-size:1.4rem;font-weight:700;color:#2563eb}
+.cat-stat-label{font-size:0.8rem;color:#94a3b8;margin-bottom:1rem}
+.cat-link{display:inline-flex;align-items:center;gap:0.5rem;color:#2563eb;font-weight:600;font-size:0.95rem}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+    <h1>Shop by Category</h1>
+    <p>Browse verified second-hand electronics across all categories</p>
+</div>
+
+<div class="categories-main">
+    <div class="category-big-grid">
+
+        <a href="{% url 'products' %}?category=smartphones" class="category-big-card">
+            <div class="cat-banner"><i class="fas fa-mobile-alt"></i></div>
+            <div class="cat-body">
+                <h3>Smartphones</h3>
+                <p>iPhones, Samsung, Google Pixel and more</p>
+                <div class="cat-stat-num">Browse</div>
+                <div class="cat-stat-label">All Listings</div>
+                <span class="cat-link">Browse Smartphones <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
+        <a href="{% url 'products' %}?category=laptops" class="category-big-card">
+            <div class="cat-banner"><i class="fas fa-laptop"></i></div>
+            <div class="cat-body">
+                <h3>Laptops</h3>
+                <p>MacBooks, Windows laptops, Chromebooks</p>
+                <div class="cat-stat-num">Browse</div>
+                <div class="cat-stat-label">All Listings</div>
+                <span class="cat-link">Browse Laptops <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
+        <a href="{% url 'products' %}?category=cameras" class="category-big-card">
+            <div class="cat-banner"><i class="fas fa-camera"></i></div>
+            <div class="cat-body">
+                <h3>Cameras</h3>
+                <p>DSLR, mirrorless, point & shoot cameras</p>
+                <div class="cat-stat-num">Browse</div>
+                <div class="cat-stat-label">All Listings</div>
+                <span class="cat-link">Browse Cameras <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
+        <a href="{% url 'products' %}?category=lenses" class="category-big-card">
+            <div class="cat-banner"><i class="fas fa-circle"></i></div>
+            <div class="cat-body">
+                <h3>Lenses</h3>
+                <p>Canon, Nikon, Sony, Sigma lenses</p>
+                <div class="cat-stat-num">Browse</div>
+                <div class="cat-stat-label">All Listings</div>
+                <span class="cat-link">Browse Lenses <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
+        <a href="{% url 'products' %}?category=audio" class="category-big-card">
+            <div class="cat-banner"><i class="fas fa-headphones"></i></div>
+            <div class="cat-body">
+                <h3>Audio</h3>
+                <p>Headphones, earbuds, speakers</p>
+                <div class="cat-stat-num">Browse</div>
+                <div class="cat-stat-label">All Listings</div>
+                <span class="cat-link">Browse Audio <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
+        <a href="{% url 'products' %}?category=tablets" class="category-big-card">
+            <div class="cat-banner"><i class="fas fa-tablet-alt"></i></div>
+            <div class="cat-body">
+                <h3>Tablets</h3>
+                <p>iPads, Samsung tablets, Android tablets</p>
+                <div class="cat-stat-num">Browse</div>
+                <div class="cat-stat-label">All Listings</div>
+                <span class="cat-link">Browse Tablets <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
+        <a href="{% url 'products' %}?category=smartwatches" class="category-big-card">
+            <div class="cat-banner"><i class="fas fa-clock"></i></div>
+            <div class="cat-body">
+                <h3>Smartwatches</h3>
+                <p>Apple Watch, Samsung Galaxy Watch and more</p>
+                <div class="cat-stat-num">Browse</div>
+                <div class="cat-stat-label">All Listings</div>
+                <span class="cat-link">Browse Watches <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
+        <a href="{% url 'products' %}?category=gaming" class="category-big-card">
+            <div class="cat-banner"><i class="fas fa-gamepad"></i></div>
+            <div class="cat-body">
+                <h3>Gaming</h3>
+                <p>Consoles, controllers, gaming accessories</p>
+                <div class="cat-stat-num">Browse</div>
+                <div class="cat-stat-label">All Listings</div>
+                <span class="cat-link">Browse Gaming <i class="fas fa-arrow-right"></i></span>
+            </div>
+        </a>
+
+    </div>
+
+    <div style="text-align:center;margin-top:4rem;padding:3rem;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:2rem;">
+        <h2 style="font-size:2rem;margin-bottom:1rem;color:#0f172a;">Can't find what you're looking for?</h2>
+        <p style="color:#64748b;margin-bottom:1.5rem;">Browse all listings or use the search bar above.</p>
+        <a href="{% url 'products' %}" class="btn-primary" style="text-decoration:none;padding:0.9rem 2.5rem;font-size:1rem;">
+            <i class="fas fa-search"></i> Browse All Products
+        </a>
+    </div>
+</div>
+{% endblock %}

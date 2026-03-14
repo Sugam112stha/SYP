@@ -1,0 +1,256 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}{{ product.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.breadcrumb {
+    max-width: 1200px; margin: 1.2rem auto 0; padding: 0 1.5rem;
+    display: flex; align-items: center; gap: 6px;
+    color: var(--gray-400); font-size: 0.85rem; flex-wrap: wrap;
+}
+.breadcrumb a { color: var(--primary); }
+.breadcrumb i { font-size: 0.65rem; }
+.detail-layout {
+    max-width: 1200px; margin: 1.5rem auto 3rem; padding: 0 1.5rem;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start;
+}
+.main-img-wrap {
+    border-radius: var(--radius-xl); overflow: hidden;
+    background: var(--gray-100); aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+}
+.main-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+.main-img-wrap:hover img { transform: scale(1.04); }
+.thumbs { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.thumb {
+    width: 72px; height: 72px; border-radius: var(--radius);
+    overflow: hidden; cursor: pointer;
+    border: 2px solid var(--gray-200); transition: var(--transition);
+}
+.thumb.active, .thumb:hover { border-color: var(--primary); }
+.thumb img { width: 100%; height: 100%; object-fit: cover; }
+/* Info panel */
+.cat-label { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+.detail-title { font-size: 1.8rem; font-weight: 800; color: var(--gray-900); line-height: 1.25; margin-bottom: 10px; }
+.detail-price { font-size: 2rem; font-weight: 800; color: var(--primary); font-family: 'JetBrains Mono', monospace; margin-bottom: 12px; }
+.cond-badge {
+    display: inline-block; padding: 4px 14px;
+    border-radius: var(--radius-full); font-size: 0.82rem; font-weight: 700; margin-bottom: 14px;
+}
+.cond-excellent { background: var(--success-bg); color: var(--success); }
+.cond-good      { background: var(--primary-bg); color: var(--primary); }
+.cond-fair      { background: var(--warning-bg); color: var(--warning); }
+.cond-poor      { background: var(--danger-bg);  color: var(--danger); }
+.loc-row { display: flex; align-items: center; gap: 6px; color: var(--gray-500); font-size: 0.9rem; margin-bottom: 16px; }
+.loc-row i { color: var(--primary); }
+.seller-box {
+    background: var(--gray-50); border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-lg); padding: 1.2rem; margin-bottom: 1.2rem;
+}
+.seller-row { display: flex; align-items: center; gap: 12px; }
+.seller-av {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: var(--primary); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem; font-weight: 700; flex-shrink: 0;
+}
+.seller-name { font-weight: 700; color: var(--gray-900); }
+.seller-since { font-size: 0.8rem; color: var(--gray-500); }
+.verified-tag { font-size: 0.8rem; color: var(--success); font-weight: 700; margin-top: 8px; }
+.action-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.2rem; }
+.btn-buy {
+    padding: 0.9rem; background: var(--primary); color: white;
+    border: none; border-radius: var(--radius-md);
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    text-align: center; text-decoration: none; display: block;
+    transition: var(--transition);
+}
+.btn-buy:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.btn-back {
+    padding: 0.9rem; background: white; color: var(--primary);
+    border: 2px solid var(--primary); border-radius: var(--radius-md);
+    font-size: 0.95rem; font-weight: 600; text-align: center;
+    text-decoration: none; display: block; transition: var(--transition);
+}
+.btn-back:hover { background: var(--primary-bg); }
+.desc-section { margin-bottom: 1.2rem; }
+.desc-section h3 { font-size: 1rem; font-weight: 700; color: var(--gray-800); margin-bottom: 8px; }
+.desc-section p  { color: var(--gray-600); line-height: 1.75; font-size: 0.93rem; }
+.specs-table { background: var(--gray-50); border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--gray-200); }
+.spec-row { display: flex; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--gray-200); font-size: 0.88rem; }
+.spec-row:last-child { border-bottom: none; }
+.spec-label { color: var(--gray-500); font-weight: 500; }
+.spec-val   { font-weight: 700; color: var(--gray-800); }
+.sold-banner {
+    background: var(--danger-bg); color: var(--danger);
+    border: 2px solid var(--danger); border-radius: var(--radius-md);
+    padding: 1rem; text-align: center; font-weight: 700; font-size: 1.05rem;
+    margin-top: 0.5rem;
+}
+.own-banner {
+    background: var(--warning-bg); color: var(--warning);
+    border-radius: var(--radius-md); padding: 1rem;
+    text-align: center; font-weight: 600; font-size: 0.93rem;
+}
+@media (max-width: 768px) { .detail-layout { grid-template-columns: 1fr; gap: 1.5rem; } }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Breadcrumb -->
+<div class="breadcrumb">
+    <a href="{% url 'index' %}">Home</a>
+    <i class="fas fa-chevron-right"></i>
+    <a href="{% url 'products' %}">Products</a>
+    <i class="fas fa-chevron-right"></i>
+    <span>{{ product.title|truncatechars:40 }}</span>
+</div>
+
+<div class="detail-layout">
+
+    <!-- Images -->
+    <div>
+        <div class="main-img-wrap">
+            {% with images.first as first_img %}
+            {% if first_img %}
+            <img src="{{ first_img.image.url }}" alt="{{ product.title }}" id="mainImg">
+            {% else %}
+            <img src="https://placehold.co/600x500/eff6ff/2563eb?text={{ product.title|urlencode }}" alt="{{ product.title }}" id="mainImg">
+            {% endif %}
+            {% endwith %}
+        </div>
+        {% if images.count > 1 %}
+        <div class="thumbs">
+            {% for img in images %}
+            <div class="thumb {% if forloop.first %}active{% endif %}" onclick="changeImg('{{ img.image.url }}', this)">
+                <img src="{{ img.image.url }}" alt="Photo {{ forloop.counter }}" loading="lazy">
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Info -->
+    <div>
+        <div class="cat-label">{{ product.category.name|default:"Electronics" }}</div>
+        <h1 class="detail-title">{{ product.title }}</h1>
+
+        <span class="cond-badge cond-{{ product.condition }}">
+            <i class="fas fa-star" style="margin-right:4px;"></i>{{ product.get_condition_display }}
+        </span>
+
+        <div class="detail-price mono">Rs. {{ product.price }}</div>
+
+        {% if product.location %}
+        <div class="loc-row"><i class="fas fa-map-marker-alt"></i> {{ product.location }}</div>
+        {% endif %}
+
+        <!-- Seller -->
+        <div class="seller-box">
+            <div class="seller-row">
+                <div class="seller-av">{{ product.seller.first_name|first|upper }}</div>
+                <div>
+                    <div class="seller-name">{{ product.seller.get_full_name }}</div>
+                    <div class="seller-since">Listed {{ product.created_at|date:"d M Y" }}</div>
+                </div>
+            </div>
+            <div class="verified-tag"><i class="fas fa-check-circle"></i> Verified Seller</div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-btns">
+            {% if product.status == 'available' %}
+                {% if user.is_authenticated %}
+                    {% if product.seller == user %}
+                    <div class="own-banner"><i class="fas fa-info-circle"></i> This is your listing</div>
+                    {% else %}
+                    <a href="{% url 'add_to_cart' product.pk %}" class="btn-buy">
+                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                    </a>
+                    {% endif %}
+                {% else %}
+                <a href="{% url 'login' %}?next={{ request.path }}" class="btn-buy">
+                    <i class="fas fa-sign-in-alt"></i> Login to Buy
+                </a>
+                {% endif %}
+            {% else %}
+            <div class="sold-banner"><i class="fas fa-times-circle"></i> This item has been sold</div>
+            {% endif %}
+            <a href="{% url 'products' %}" class="btn-back"><i class="fas fa-arrow-left"></i> Back to Products</a>
+        </div>
+
+        <!-- Description -->
+        <div class="desc-section">
+            <h3>Description</h3>
+            <p>{{ product.description }}</p>
+        </div>
+
+        <!-- Specs -->
+        <div class="specs-table">
+            <div class="spec-row"><span class="spec-label">Condition</span><span class="spec-val">{{ product.get_condition_display }}</span></div>
+            <div class="spec-row"><span class="spec-label">Category</span><span class="spec-val">{{ product.category.name|default:"Electronics" }}</span></div>
+            <div class="spec-row"><span class="spec-label">Seller</span><span class="spec-val">{{ product.seller.get_full_name }}</span></div>
+            <div class="spec-row"><span class="spec-label">Listed</span><span class="spec-val">{{ product.created_at|date:"d M Y" }}</span></div>
+            <div class="spec-row"><span class="spec-label">Photos</span><span class="spec-val">{{ images.count }} uploaded</span></div>
+            <div class="spec-row">
+                <span class="spec-label">Status</span>
+                <span class="spec-val" style="color:{% if product.status == 'available' %}var(--success){% else %}var(--danger){% endif %};">
+                    {{ product.get_status_display }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Related Products -->
+{% if related %}
+<div style="max-width:1200px;margin:0 auto 3rem;padding:0 1.5rem;">
+    <div class="section-header">
+        <div>
+            <span class="section-subtitle">More Like This</span>
+            <h2>Related Products</h2>
+        </div>
+    </div>
+    <div class="product-grid">
+        {% for p in related %}
+        <div class="product-card">
+            <div class="product-image">
+                {% with p.images.first as img %}
+                {% if img %}
+                <img src="{{ img.image.url }}" alt="{{ p.title }}" loading="lazy">
+                {% else %}
+                <img src="https://placehold.co/400x280/eff6ff/2563eb?text={{ p.title|urlencode }}" alt="{{ p.title }}">
+                {% endif %}
+                {% endwith %}
+                <div class="image-overlay">
+                    <a href="{% url 'product_detail' p.pk %}" class="quick-view"><i class="fas fa-eye"></i></a>
+                </div>
+            </div>
+            <div class="product-info">
+                <h3 class="product-title"><a href="{% url 'product_detail' p.pk %}">{{ p.title }}</a></h3>
+                <div class="product-price"><span class="current-price mono">Rs. {{ p.price }}</span></div>
+                {% if p.status == 'available' %}
+                <a href="{% url 'add_to_cart' p.pk %}" class="add-to-cart-btn"><i class="fas fa-shopping-cart"></i> Add to Cart</a>
+                {% else %}
+                <button class="add-to-cart-btn" disabled>Sold Out</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function changeImg(url, thumb) {
+    document.getElementById('mainImg').src = url;
+    document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+    thumb.classList.add('active');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}Messages — AlphaMart{% endblock %}
+
+{% block extra_css %}
+<style>
+.inbox-wrap { max-width: 800px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+.inbox-title { font-size: 1.6rem; font-weight: 800; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 10px; }
+.inbox-title i { color: var(--primary); }
+.conv-card {
+    background: white; border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-lg); padding: 1rem 1.2rem;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 10px; transition: var(--transition);
+    text-decoration: none; color: inherit;
+}
+.conv-card:hover { border-color: var(--primary); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.conv-card.unread { border-left: 3px solid var(--primary); }
+.conv-img { width: 52px; height: 52px; border-radius: var(--radius); overflow: hidden; flex-shrink: 0; background: var(--gray-100); }
+.conv-img img { width: 100%; height: 100%; object-fit: cover; }
+.conv-body { flex: 1; min-width: 0; }
+.conv-name    { font-weight: 700; font-size: 0.92rem; color: var(--gray-900); }
+.conv-product { font-size: 0.82rem; color: var(--gray-500); margin: 2px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-preview { font-size: 0.85rem; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-meta  { text-align: right; flex-shrink: 0; }
+.conv-time  { font-size: 0.75rem; color: var(--gray-400); margin-bottom: 5px; }
+.unread-badge { background: var(--primary); color: white; font-size: 0.68rem; font-weight: 800; padding: 2px 8px; border-radius: 999px; }
+.empty-inbox { text-align: center; padding: 4rem 2rem; color: var(--gray-400); }
+.empty-inbox i { font-size: 3rem; display: block; margin-bottom: 1rem; opacity: 0.35; }
+.empty-inbox h3 { font-size: 1.1rem; color: var(--gray-600); margin-bottom: 0.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="inbox-wrap">
+    <h1 class="inbox-title"><i class="fas fa-inbox"></i> Messages</h1>
+
+    {% if conversations %}
+        {% for conv in conversations %}
+        <a href="{% url 'conversation' conv.product.pk conv.other_user.pk %}"
+           class="conv-card {% if conv.unread %}unread{% endif %}">
+            <div class="conv-img">
+                {% with conv.product.images.first as img %}
+                {% if img %}<img src="{{ img.image.url }}" alt="">
+                {% else %}<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="fas fa-box" style="color:var(--primary);opacity:0.35;"></i></div>
+                {% endif %}{% endwith %}
+            </div>
+            <div class="conv-body">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+                    <span class="conv-name">{{ conv.other_user.get_full_name }}</span>
+                    {% if conv.unread %}<span style="font-size:0.72rem;background:var(--primary-bg);color:var(--primary);padding:1px 7px;border-radius:999px;font-weight:700;">New</span>{% endif %}
+                </div>
+                <div class="conv-product">
+                    <i class="fas fa-tag" style="color:var(--primary);font-size:0.7rem;"></i>
+                    {{ conv.product.title|truncatechars:45 }} &nbsp;·&nbsp;
+                    <span style="color:var(--primary);font-weight:700;font-family:'JetBrains Mono',monospace;">Rs. {{ conv.product.price }}</span>
+                </div>
+                <div class="conv-preview">
+                    {% if conv.last_msg.sender == user %}You: {% endif %}{{ conv.last_msg.content|truncatechars:60 }}
+                </div>
+            </div>
+            <div class="conv-meta">
+                <div class="conv-time">{{ conv.last_msg.created_at|date:"d M" }}</div>
+                {% if conv.unread %}<span class="unread-badge">{{ conv.unread }}</span>{% endif %}
+            </div>
+        </a>
+        {% endfor %}
+    {% else %}
+    <div class="empty-inbox">
+        <i class="fas fa-comments"></i>
+        <h3>No messages yet</h3>
+        <p>Browse products and message sellers to start negotiating!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

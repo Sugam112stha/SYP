@@ -1,0 +1,145 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}Chat — {{ product.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.conv-wrap { max-width: 800px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+.conv-header {
+    background: white; border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-lg); padding: 1rem 1.2rem;
+    display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;
+}
+.conv-product-img {
+    width: 52px; height: 52px; border-radius: var(--radius);
+    overflow: hidden; flex-shrink: 0; background: var(--gray-100);
+}
+.conv-product-img img { width: 100%; height: 100%; object-fit: cover; }
+.conv-product-info h3 { font-size: 0.95rem; font-weight: 700; color: var(--gray-900); margin-bottom: 2px; }
+.conv-product-info p  { font-size: 0.82rem; color: var(--gray-500); }
+.conv-product-info .price { color: var(--primary); font-weight: 800; font-family: 'JetBrains Mono',monospace; }
+.conv-back { margin-left: auto; font-size: 0.85rem; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 5px; }
+
+.chat-box {
+    background: white; border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-lg); overflow: hidden;
+}
+.chat-messages {
+    padding: 1.2rem; display: flex; flex-direction: column; gap: 12px;
+    min-height: 300px; max-height: 500px; overflow-y: auto;
+    background: #f8faff;
+}
+.bubble-wrap { display: flex; flex-direction: column; max-width: 72%; }
+.bubble-wrap.mine  { align-self: flex-end; align-items: flex-end; }
+.bubble-wrap.theirs { align-self: flex-start; align-items: flex-start; }
+.bubble {
+    padding: 10px 14px; border-radius: 16px; font-size: 0.9rem; line-height: 1.55;
+    word-break: break-word;
+}
+.bubble.mine   { background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+.bubble.theirs { background: white; color: var(--gray-800); border: 1.5px solid var(--gray-200); border-bottom-left-radius: 4px; }
+.bubble-meta { font-size: 0.72rem; color: var(--gray-400); margin-top: 3px; padding: 0 2px; }
+.sender-name { font-size: 0.76rem; font-weight: 700; color: var(--gray-500); margin-bottom: 3px; padding: 0 2px; }
+
+.chat-input {
+    padding: 1rem; border-top: 1px solid var(--gray-200); background: white;
+    display: flex; gap: 10px; align-items: flex-end;
+}
+.chat-input textarea {
+    flex: 1; padding: 10px 14px; border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius-lg); font-size: 0.9rem; font-family: inherit;
+    resize: none; outline: none; transition: border-color 0.2s; line-height: 1.5;
+}
+.chat-input textarea:focus { border-color: var(--primary); }
+.send-btn {
+    background: var(--primary); color: white; border: none;
+    border-radius: var(--radius-lg); padding: 10px 20px;
+    font-weight: 700; font-size: 0.9rem; cursor: pointer;
+    font-family: inherit; transition: var(--transition); white-space: nowrap;
+}
+.send-btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+.empty-chat { text-align: center; padding: 3rem 1rem; color: var(--gray-400); }
+.empty-chat i { font-size: 2.5rem; display: block; margin-bottom: 0.8rem; opacity: 0.4; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="conv-wrap">
+
+    <!-- Product header -->
+    <div class="conv-header">
+        <div class="conv-product-img">
+            {% with product.images.first as img %}
+            {% if img %}<img src="{{ img.image.url }}" alt="{{ product.title }}">
+            {% else %}<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="fas fa-box" style="color:var(--primary);opacity:0.4;"></i></div>
+            {% endif %}{% endwith %}
+        </div>
+        <div class="conv-product-info">
+            <h3>{{ product.title|truncatechars:50 }}</h3>
+            <p>
+                Chatting with <strong>{{ other_user.get_full_name }}</strong> &nbsp;·&nbsp;
+                <span class="price">Rs. {{ product.price }}</span>
+            </p>
+        </div>
+        <a href="{% url 'product_detail' product.pk %}" class="conv-back">
+            <i class="fas fa-arrow-left"></i> Back to Product
+        </a>
+    </div>
+
+    <!-- Chat box -->
+    <div class="chat-box">
+        <div class="chat-messages" id="chatMessages">
+            {% if thread %}
+                {% for msg in thread %}
+                <div class="bubble-wrap {% if msg.sender == user %}mine{% else %}theirs{% endif %}">
+                    {% if msg.sender != user %}
+                    <div class="sender-name">{{ msg.sender.first_name }}</div>
+                    {% endif %}
+                    <div class="bubble {% if msg.sender == user %}mine{% else %}theirs{% endif %}">
+                        {{ msg.content }}
+                    </div>
+                    <div class="bubble-meta">{{ msg.created_at|date:"d M Y" }} at {{ msg.created_at|time:"H:i" }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="empty-chat">
+                <i class="fas fa-comments"></i>
+                <p>No messages yet. Start the conversation!</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Reply form -->
+        <div class="chat-input">
+            {% if is_seller %}
+            <form method="POST" action="{% url 'seller_reply' product.pk other_user.pk %}" style="display:contents;">
+            {% else %}
+            <form method="POST" action="{% url 'send_message' product.pk %}" style="display:contents;">
+            {% endif %}
+                {% csrf_token %}
+                <textarea name="content" rows="2" placeholder="Type your message..." id="msgInput"></textarea>
+                <button type="submit" class="send-btn">
+                    <i class="fas fa-paper-plane"></i> Send
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-scroll to bottom of chat
+const box = document.getElementById('chatMessages');
+if (box) box.scrollTop = box.scrollHeight;
+
+// Send on Ctrl+Enter
+document.getElementById('msgInput')?.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && e.key === 'Enter') {
+        this.closest('form').submit();
+    }
+});
+</script>
+{% endblock %}

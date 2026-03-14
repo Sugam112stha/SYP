@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Your AlphaMart Order Confirmation</title>
+<style>
+  body { margin:0; padding:0; background:#f1f5f9; font-family:'Segoe UI',Arial,sans-serif; }
+  .wrapper { max-width:580px; margin:40px auto; background:white; border-radius:16px; overflow:hidden; box-shadow:0 4px 24px rgba(0,0,0,0.08); }
+  .header { background:linear-gradient(135deg,#1e40af,#2563eb); padding:32px 40px; }
+  .header .logo { font-size:1.4rem; font-weight:800; color:white; }
+  .header .logo span { color:#93c5fd; }
+  .header .tagline { color:rgba(255,255,255,0.75); font-size:0.85rem; margin-top:4px; }
+  .success-banner { background:#f0fdf4; border-bottom:3px solid #16a34a; padding:20px 40px; display:flex; align-items:center; gap:14px; }
+  .check-circle { width:44px; height:44px; background:#16a34a; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1.2rem; color:white; }
+  .success-text h2 { font-size:1.05rem; font-weight:700; color:#15803d; margin:0 0 3px; }
+  .success-text p  { font-size:0.85rem; color:#166534; margin:0; }
+  .body { padding:28px 40px; }
+  .section-title { font-size:0.78rem; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#64748b; margin-bottom:12px; }
+  .item-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f1f5f9; }
+  .item-name { font-size:0.9rem; color:#0f172a; font-weight:500; }
+  .item-price { font-size:0.9rem; font-weight:700; color:#2563eb; font-family:monospace; }
+  .summary-box { background:#f8fafc; border-radius:10px; padding:16px; margin:20px 0; }
+  .sum-row { display:flex; justify-content:space-between; font-size:0.88rem; color:#475569; margin-bottom:6px; }
+  .sum-row.total { font-size:1rem; font-weight:800; color:#0f172a; padding-top:8px; border-top:1px solid #e2e8f0; margin-top:4px; }
+  .sum-row.total span:last-child { color:#2563eb; font-family:monospace; }
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:20px 0; }
+  .info-card { background:#f8fafc; border-radius:10px; padding:14px; }
+  .info-label { font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#94a3b8; margin-bottom:4px; }
+  .info-val   { font-size:0.88rem; color:#0f172a; font-weight:500; }
+  .delivery-box { background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:14px 16px; margin:16px 0; }
+  .delivery-box .dlabel { font-size:0.75rem; font-weight:700; text-transform:uppercase; color:#1d4ed8; margin-bottom:4px; }
+  .delivery-box .dval   { font-size:0.88rem; color:#1e40af; }
+  .cta-box { text-align:center; margin:24px 0 8px; }
+  .cta-btn { display:inline-block; background:#2563eb; color:white; padding:12px 32px; border-radius:999px; font-size:0.9rem; font-weight:700; text-decoration:none; }
+  .footer { background:#f8fafc; padding:20px 40px; text-align:center; font-size:0.8rem; color:#94a3b8; border-top:1px solid #e2e8f0; }
+  .footer a { color:#2563eb; text-decoration:none; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">⚡ Alpha<span>Mart</span></div>
+    <div class="tagline">Nepal's Trusted Second-Hand Electronics Marketplace</div>
+  </div>
+
+  <!-- Success banner -->
+  <div class="success-banner">
+    <div class="check-circle">✓</div>
+    <div class="success-text">
+      <h2>Order Confirmed!</h2>
+      <p>Hi {{ first_name }}, your purchase is confirmed. Thank you for shopping with AlphaMart.</p>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- Items -->
+    <div class="section-title">Items Ordered</div>
+    {% for item in items %}
+    <div class="item-row">
+      <div class="item-name">{{ item.title }}</div>
+      <div class="item-price">Rs. {{ item.price }}</div>
+    </div>
+    {% endfor %}
+
+    <!-- Summary -->
+    <div class="summary-box">
+      <div class="sum-row"><span>Subtotal</span><span>Rs. {{ subtotal }}</span></div>
+      <div class="sum-row">
+        <span>Shipping</span>
+        {% if shipping == 0 %}<span style="color:#16a34a;font-weight:700;">FREE</span>
+        {% else %}<span>Rs. {{ shipping }}</span>{% endif %}
+      </div>
+      <div class="sum-row total"><span>Total Paid</span><span>Rs. {{ total }}</span></div>
+    </div>
+
+    <!-- Info grid -->
+    <div class="info-grid">
+      <div class="info-card">
+        <div class="info-label">Payment Method</div>
+        <div class="info-val">{{ payment_method }}</div>
+      </div>
+      <div class="info-card">
+        <div class="info-label">Estimated Delivery</div>
+        <div class="info-val">3–5 working days</div>
+      </div>
+    </div>
+
+    <!-- Delivery address -->
+    <div class="delivery-box">
+      <div class="dlabel">📍 Delivery Address</div>
+      <div class="dval">{{ shipping_address }}</div>
+    </div>
+
+    <!-- Support note -->
+    <p style="font-size:0.84rem;color:#64748b;line-height:1.6;margin:16px 0;">
+      If you have any questions about your order, please contact the seller through your
+      <a href="#" style="color:#2563eb;">AlphaMart dashboard</a> or reach us at
+      <a href="mailto:support@alphamart.com.np" style="color:#2563eb;">support@alphamart.com.np</a>.
+    </p>
+
+    <div class="cta-box">
+      <a href="http://127.0.0.1:8000/dashboard/" class="cta-btn">View My Orders</a>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    &copy; 2082 BS AlphaMart Nepal &nbsp;·&nbsp;
+    <a href="#">Privacy Policy</a> &nbsp;·&nbsp;
+    <a href="#">Terms &amp; Conditions</a> &nbsp;·&nbsp;
+    <a href="#">Contact Us</a><br>
+    <span style="margin-top:6px;display:block;">This is an automated email. Please do not reply directly.</span>
+  </div>
+
+</div>
+</body>
+</html>

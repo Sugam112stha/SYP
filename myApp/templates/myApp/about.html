@@ -1,0 +1,201 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}About Us{% endblock %}
+
+{% block extra_css %}
+<style>
+.about-hero {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+    text-align: center;
+    padding: 5rem 2rem;
+}
+.about-hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 1rem; }
+.about-hero p { font-size: 1.2rem; opacity: 0.85; }
+
+.about-section { max-width: 1100px; margin: 4rem auto; padding: 0 2rem; }
+
+.mission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin: 3rem 0;
+}
+.mission-card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: transform 0.3s;
+}
+.mission-card:hover { transform: translateY(-5px); }
+.mission-icon {
+    width: 70px; height: 70px;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.8rem; color: white;
+}
+.mission-card h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: #1e293b; }
+.mission-card p { color: #64748b; font-size: 0.95rem; line-height: 1.6; }
+
+.team-section { background: #f8fafc; padding: 4rem 2rem; }
+.team-section h2 { text-align: center; font-size: 2rem; font-weight: 800; color: #1e293b; margin-bottom: 0.5rem; }
+.team-subtitle { text-align: center; color: #64748b; margin-bottom: 3rem; }
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+.team-card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transition: transform 0.3s;
+}
+.team-card:hover { transform: translateY(-5px); }
+.avatar {
+    width: 80px; height: 80px;
+    background: linear-gradient(135deg, #2563eb, #60a5fa);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem; font-weight: 800; color: white;
+}
+.team-card h3 { font-size: 1.1rem; font-weight: 700; color: #1e293b; margin-bottom: 0.3rem; }
+.student-id {
+    background: #eff6ff;
+    color: #2563eb;
+    padding: 0.2rem 0.8rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+.team-role { color: #64748b; font-size: 0.9rem; }
+
+.project-section {
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 0 2rem;
+    text-align: center;
+}
+.project-card {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: white;
+    border-radius: 2rem;
+    padding: 3rem;
+}
+.project-card h2 { font-size: 2rem; font-weight: 800; margin-bottom: 1rem; }
+.project-card p { opacity: 0.9; font-size: 1.05rem; line-height: 1.8; }
+.tech-badges { display: flex; flex-wrap: wrap; gap: 0.7rem; justify-content: center; margin-top: 1.5rem; }
+.badge {
+    background: rgba(255,255,255,0.2);
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="about-hero">
+    <h1 data-aos="fade-up">About Alpha Coders</h1>
+    <p data-aos="fade-up" data-aos-delay="100">London Metropolitan University — Second Year Project 2025</p>
+</section>
+
+<!-- Mission Cards -->
+<div class="about-section">
+    <div style="text-align:center;margin-bottom:1rem;">
+        <span style="color:#2563eb;font-weight:700;text-transform:uppercase;letter-spacing:1px;font-size:0.9rem;">Who We Are</span>
+        <h2 style="font-size:2rem;font-weight:800;color:#1e293b;margin-top:0.5rem;">Our Mission</h2>
+    </div>
+    <div class="mission-grid">
+        <div class="mission-card" data-aos="fade-up">
+            <div class="mission-icon"><i class="fas fa-shield-alt"></i></div>
+            <h3>Safe Trading</h3>
+            <p>Every user verified with email, phone and address for a trusted community.</p>
+        </div>
+        <div class="mission-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="mission-icon"><i class="fas fa-camera"></i></div>
+            <h3>Real Photos</h3>
+            <p>Sellers must upload real photos so buyers know exactly what they're getting.</p>
+        </div>
+        <div class="mission-card" data-aos="fade-up" data-aos-delay="200">
+            <div class="mission-icon"><i class="fas fa-bolt"></i></div>
+            <h3>Fast & Easy</h3>
+            <p>List your device in minutes and reach thousands of verified buyers instantly.</p>
+        </div>
+        <div class="mission-card" data-aos="fade-up" data-aos-delay="300">
+            <div class="mission-icon"><i class="fas fa-heart"></i></div>
+            <h3>Community First</h3>
+            <p>Built for students and locals who want fair prices on quality electronics.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Team -->
+<section class="team-section">
+    <h2 data-aos="fade-up">Meet the Team</h2>
+    <p class="team-subtitle" data-aos="fade-up">The Alpha Coders behind AlphaMart</p>
+    <div class="team-grid">
+        <div class="team-card" data-aos="zoom-in">
+            <div class="avatar">AK</div>
+            <h3>Aayush Khanal</h3>
+            <div class="student-id">24045784</div>
+            <p class="team-role"><i class="fas fa-code" style="color:#2563eb;"></i> Frontend & Database</p>
+        </div>
+        <div class="team-card" data-aos="zoom-in" data-aos-delay="100">
+            <div class="avatar">RD</div>
+            <h3>Rijan Dhital</h3>
+            <div class="student-id">24046010</div>
+            <p class="team-role"><i class="fas fa-database" style="color:#2563eb;"></i> Frontend & Database</p>
+        </div>
+        <div class="team-card" data-aos="zoom-in" data-aos-delay="200">
+            <div class="avatar">KR</div>
+            <h3>Kyani Dan Rai</h3>
+            <div class="student-id">24045912</div>
+            <p class="team-role"><i class="fas fa-lock" style="color:#2563eb;"></i> Backend Development</p>
+        </div>
+        <div class="team-card" data-aos="zoom-in" data-aos-delay="300">
+            <div class="avatar">NT</div>
+            <h3>Nimesh Tamang</h3>
+            <div class="student-id">24045939</div>
+            <p class="team-role"><i class="fas fa-comments" style="color:#2563eb;"></i> Payments</p>
+        </div>
+        <div class="team-card" data-aos="zoom-in" data-aos-delay="400">
+            <div class="avatar">SS</div>
+            <h3>Sugam Shrestha</h3>
+            <div class="student-id">24046097</div>
+            <p class="team-role"><i class="fas fa-credit-card" style="color:#2563eb;"></i> Chat System</p>
+        </div>
+    </div>
+</section>
+
+<!-- Project Info -->
+<section class="project-section">
+    <div class="project-card" data-aos="fade-up">
+        <h2>Our Project</h2>
+        <p>AlphaMart is a secure, full-stack marketplace for buying and selling second-hand electronics. Built with Django, it features verified user accounts, multi-image listings, in-app messaging, a complaint system, and order management.</p>
+        <div class="tech-badges">
+            <span class="badge"><i class="fab fa-python"></i> Python</span>
+            <span class="badge">Django</span>
+            <span class="badge">SQLite</span>
+            <span class="badge">HTML/CSS</span>
+            <span class="badge">JavaScript</span>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

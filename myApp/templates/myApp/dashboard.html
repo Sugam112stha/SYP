@@ -1,0 +1,846 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Page layout ──────────────────────────────────────────── */
+.dash-page { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+
+/* ── Welcome Banner ───────────────────────────────────────── */
+.welcome-banner {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white; padding: 1.8rem 2.2rem;
+    border-radius: var(--radius-xl); margin-bottom: 1.8rem;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 1rem;
+}
+.welcome-text h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 4px; }
+.welcome-text p  { opacity: 0.85; font-size: 0.92rem; }
+.banner-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.b-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 14px; border-radius: var(--radius-full);
+    font-size: 0.78rem; font-weight: 700;
+}
+.pill-verified { background: rgba(255,255,255,0.2); color: white; }
+.pill-buyer    { background: rgba(96,187,70,0.3);   color: #d4f5c5; }
+.pill-seller   { background: rgba(245,158,11,0.3);  color: #fef3c7; }
+.banner-action {
+    background: white; color: var(--primary);
+    padding: 0.7rem 1.5rem; border-radius: var(--radius-full);
+    font-weight: 700; font-size: 0.9rem; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: var(--transition); text-decoration: none;
+}
+.banner-action:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+
+/* ── Stats Row ────────────────────────────────────────────── */
+.stats-row {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 1rem; margin-bottom: 1.8rem;
+}
+.stat-card {
+    background: white; padding: 1.4rem;
+    border-radius: var(--radius-lg); text-align: center;
+    box-shadow: var(--shadow-sm); border: 1.5px solid var(--gray-200);
+    transition: var(--transition);
+}
+.stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.stat-icon {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--primary-bg); color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 0.7rem; font-size: 1.2rem;
+}
+.stat-num { font-size: 1.9rem; font-weight: 800; color: var(--primary); font-family: 'JetBrains Mono', monospace; line-height: 1; }
+.stat-lbl { font-size: 0.78rem; color: var(--gray-500); margin-top: 4px; }
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+.dash-tabs {
+    display: flex; gap: 0; margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--gray-200);
+}
+.tab-btn {
+    padding: 11px 22px; background: none; border: none;
+    font-weight: 600; color: var(--gray-500); cursor: pointer;
+    font-size: 0.92rem; font-family: inherit; transition: var(--transition);
+    position: relative; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 7px;
+}
+.tab-btn:hover { color: var(--primary); }
+.tab-btn.active { color: var(--primary); }
+.tab-btn.active::after {
+    content: ''; position: absolute; bottom: -2px; left: 0; right: 0;
+    height: 2px; background: var(--primary); border-radius: 2px 2px 0 0;
+}
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: tabFadeIn 0.2s ease; }
+@keyframes tabFadeIn { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
+
+/* ── Listing Cards ────────────────────────────────────────── */
+.section-topbar {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; gap: 0.8rem;
+}
+.section-topbar h2 { font-size: 1.15rem; font-weight: 800; color: var(--gray-900); }
+.listings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.2rem; }
+.listing-card {
+    background: white; border-radius: var(--radius-lg); overflow: hidden;
+    box-shadow: var(--shadow-sm); border: 1.5px solid var(--gray-200); transition: var(--transition);
+}
+.listing-card:hover { transform: translateY(-3px); border-color: var(--primary); }
+.listing-img { height: 150px; background: var(--gray-100); position: relative; overflow: hidden; }
+.listing-img img { width: 100%; height: 100%; object-fit: cover; }
+.listing-img .no-img {
+    width: 100%; height: 100%; display: flex; align-items: center;
+    justify-content: center; font-size: 2.5rem; color: var(--gray-300);
+}
+.status-pill {
+    position: absolute; top: 8px; right: 8px;
+    padding: 3px 10px; border-radius: var(--radius-full);
+    font-size: 0.72rem; font-weight: 700;
+}
+.s-available { background: var(--success-bg); color: var(--success); }
+.s-sold      { background: var(--danger-bg);  color: var(--danger); }
+.s-reserved  { background: var(--warning-bg); color: var(--warning); }
+.listing-body { padding: 1rem; }
+.listing-title { font-size: 0.93rem; font-weight: 700; color: var(--gray-900); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin-bottom: 3px; }
+.listing-price { font-size: 1.05rem; font-weight: 800; color: var(--primary); font-family: 'JetBrains Mono', monospace; }
+.listing-meta  { font-size: 0.76rem; color: var(--gray-400); margin: 5px 0 10px; }
+.listing-actions {
+    display: flex; gap: 6px; padding-top: 10px;
+    border-top: 1px solid var(--gray-100);
+}
+.act-btn {
+    flex: 1; padding: 6px 8px; border-radius: var(--radius-sm);
+    text-align: center; font-size: 0.8rem; font-weight: 600;
+    border: none; cursor: pointer; font-family: inherit;
+    transition: var(--transition); text-decoration: none;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.act-view   { background: var(--primary); color: white; }
+.act-view:hover { background: var(--primary-dark); }
+.act-delete { background: var(--danger-bg); color: var(--danger); }
+.act-delete:hover { background: var(--danger); color: white; }
+
+/* ── Orders Table ─────────────────────────────────────────── */
+.orders-card {
+    background: white; border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm); border: 1.5px solid var(--gray-200); overflow: hidden;
+}
+.orders-head {
+    display: grid; grid-template-columns: 2.5fr 1.2fr 1.2fr 1fr;
+    padding: 12px 18px; background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+    font-size: 0.76rem; font-weight: 700;
+    color: var(--gray-500); text-transform: uppercase; letter-spacing: 0.5px;
+}
+.order-row {
+    display: grid; grid-template-columns: 2.5fr 1.2fr 1.2fr 1fr;
+    padding: 13px 18px; align-items: center;
+    border-bottom: 1px solid var(--gray-100); font-size: 0.88rem;
+}
+.order-row:last-child { border-bottom: none; }
+.order-title  { font-weight: 600; color: var(--gray-800); }
+.order-amount { font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--primary); }
+.order-date   { color: var(--gray-500); font-size: 0.82rem; }
+.os-pill { display: inline-block; padding: 3px 10px; border-radius: var(--radius-full); font-size: 0.74rem; font-weight: 700; }
+.os-pending   { background: var(--warning-bg); color: var(--warning); }
+.os-paid      { background: var(--primary-bg); color: var(--primary); }
+.os-completed { background: var(--success-bg); color: var(--success); }
+.os-cancelled { background: var(--danger-bg);  color: var(--danger); }
+
+/* ── Profile Layout ───────────────────────────────────────── */
+.profile-layout { display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; align-items: start; }
+
+/* ── ID Card ──────────────────────────────────────────────── */
+.id-card {
+    background: white; border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm); border: 1.5px solid var(--gray-200); overflow: hidden;
+}
+.id-card-header {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    padding: 2rem 1.5rem; text-align: center;
+}
+.id-avatar {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    border: 3px solid rgba(255,255,255,0.45);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.9rem; font-weight: 800; color: white;
+    margin: 0 auto 0.9rem; letter-spacing: -1px;
+}
+.id-card-header h3 { color: white; font-size: 1.1rem; font-weight: 800; margin-bottom: 2px; }
+.id-card-header p  { color: rgba(255,255,255,0.72); font-size: 0.82rem; }
+.id-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    margin-top: 10px; padding: 4px 14px;
+    border-radius: var(--radius-full); font-size: 0.78rem; font-weight: 700;
+}
+.ib-buyer  { background: rgba(96,187,70,0.3);  color: #d4f5c5; }
+.ib-seller { background: rgba(245,158,11,0.3); color: #fef3c7; }
+
+.id-body { padding: 1.2rem; }
+.id-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 9px 0; border-bottom: 1px solid var(--gray-100); font-size: 0.86rem;
+}
+.id-row:last-child { border-bottom: none; }
+.id-row i { color: var(--primary); width: 15px; flex-shrink: 0; margin-top: 2px; font-size: 0.85rem; }
+.id-row .lbl { color: var(--gray-400); font-size: 0.73rem; display: block; }
+.id-row .val { color: var(--gray-800); font-weight: 600; }
+
+/* ── Role Toggle Card ─────────────────────────────────────── */
+.role-card {
+    margin-top: 1rem; background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm); border: 1.5px solid var(--gray-200); padding: 1.3rem;
+}
+.role-card h4 {
+    font-size: 0.9rem; font-weight: 700; color: var(--gray-800);
+    margin-bottom: 1rem; display: flex; align-items: center; gap: 7px;
+}
+.role-options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.role-opt {
+    border: 2px solid var(--gray-200); border-radius: var(--radius-md);
+    padding: 1rem 0.8rem; text-align: center; cursor: pointer;
+    transition: var(--transition); position: relative; user-select: none;
+}
+.role-opt input[type="radio"] { display: none; }
+.role-opt:has(input:checked) { border-color: var(--primary); background: var(--primary-bg); }
+.role-opt.buyer-opt:has(input:checked)  { border-color: #16a34a; background: #f0fdf4; }
+.role-opt.seller-opt:has(input:checked) { border-color: #d97706; background: #fffbeb; }
+.role-opt-icon { font-size: 1.7rem; margin-bottom: 5px; }
+.role-opt-name { font-size: 0.88rem; font-weight: 700; color: var(--gray-800); }
+.role-opt-desc { font-size: 0.71rem; color: var(--gray-400); margin-top: 2px; }
+.role-check-mark {
+    position: absolute; top: 6px; right: 6px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--primary); color: white;
+    display: none; align-items: center; justify-content: center; font-size: 0.6rem;
+}
+.role-opt:has(input:checked) .role-check-mark { display: flex; }
+.role-opt.buyer-opt:has(input:checked)  .role-check-mark { background: #16a34a; }
+.role-opt.seller-opt:has(input:checked) .role-check-mark { background: #d97706; }
+
+.role-apply-btn {
+    width: 100%; padding: 0.65rem; background: var(--primary);
+    color: white; border: none; border-radius: var(--radius);
+    font-weight: 700; font-size: 0.88rem; cursor: pointer;
+    font-family: inherit; transition: var(--transition);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.role-apply-btn:hover { background: var(--primary-dark); }
+.role-note {
+    font-size: 0.74rem; color: var(--gray-400);
+    margin-top: 8px; line-height: 1.5; text-align: center;
+}
+
+/* ── Edit Form ────────────────────────────────────────────── */
+.edit-card {
+    background: white; border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm); border: 1.5px solid var(--gray-200); padding: 1.8rem;
+}
+.edit-card-title {
+    font-size: 1.1rem; font-weight: 800; color: var(--gray-900);
+    margin-bottom: 1.5rem; padding-bottom: 0.8rem;
+    border-bottom: 1.5px solid var(--gray-100);
+    display: flex; align-items: center; gap: 8px;
+}
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem; }
+.fg { display: flex; flex-direction: column; gap: 4px; }
+.fg.full { grid-column: 1 / -1; }
+.fg label { font-weight: 600; font-size: 0.82rem; color: var(--gray-600); }
+.fg input, .fg textarea {
+    padding: 0.65rem 0.9rem; border: 1.5px solid var(--gray-200);
+    border-radius: var(--radius); font-size: 0.9rem; font-family: inherit;
+    transition: var(--transition); background: white; color: var(--gray-800);
+}
+.fg input:focus, .fg textarea:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+.fg input[disabled] { background: var(--gray-50); color: var(--gray-400); cursor: not-allowed; }
+.save-btn {
+    padding: 0.72rem 2rem; background: var(--primary); color: white;
+    border: none; border-radius: var(--radius-md); font-size: 0.95rem;
+    font-weight: 700; cursor: pointer; font-family: inherit;
+    transition: var(--transition); display: inline-flex; align-items: center; gap: 7px;
+}
+.save-btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+
+/* Password section */
+.pw-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1.5px solid var(--gray-100); }
+.pw-section h4 { font-size: 0.9rem; font-weight: 700; color: var(--gray-800); margin-bottom: 1rem; display: flex; align-items: center; gap: 7px; }
+.pw-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; align-items: end; }
+.pw-wrap { position: relative; }
+.pw-wrap input {
+    width: 100%; padding: 0.65rem 2.4rem 0.65rem 0.9rem;
+    border: 1.5px solid var(--gray-200); border-radius: var(--radius);
+    font-size: 0.9rem; font-family: inherit; transition: var(--transition);
+    box-sizing: border-box;
+}
+.pw-wrap input:focus { border-color: var(--primary); outline: none; }
+.pw-eye { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--gray-400); cursor: pointer; font-size: 0.85rem; }
+
+/* Danger zone */
+.danger-zone { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1.5px solid var(--gray-100); }
+.danger-zone h4 { font-size: 0.88rem; font-weight: 700; color: var(--danger); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 7px; }
+.logout-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 0.6rem 1.4rem; background: var(--danger-bg); color: var(--danger);
+    border-radius: var(--radius); font-weight: 600; font-size: 0.88rem;
+    text-decoration: none; transition: var(--transition);
+}
+.logout-btn:hover { background: var(--danger); color: white; }
+
+/* Empty state */
+.empty-box { text-align: center; padding: 3.5rem 2rem; color: var(--gray-400); grid-column: 1/-1; }
+.empty-box i { font-size: 3rem; display: block; margin-bottom: 0.8rem; opacity: 0.35; }
+.empty-box h3 { font-size: 1.1rem; color: var(--gray-600); margin-bottom: 0.4rem; }
+.empty-box p  { font-size: 0.88rem; margin-bottom: 1.2rem; }
+
+/* Responsive */
+@media (max-width: 960px) {
+    .profile-layout { grid-template-columns: 1fr; }
+    .form-grid, .pw-grid { grid-template-columns: 1fr; }
+    .fg.full { grid-column: 1; }
+}
+@media (max-width: 720px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .orders-head { display: none; }
+    .order-row { grid-template-columns: 1fr; gap: 4px; }
+}
+@media (max-width: 480px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .dash-tabs { overflow-x: auto; }
+    .welcome-banner { padding: 1.4rem; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dash-page">
+
+    <!-- ── Welcome Banner ──────────────────────────────────── -->
+    <div class="welcome-banner">
+        <div class="welcome-text">
+            <h1>Welcome back, {{ user.first_name }}! 👋</h1>
+            <p>Manage your listings, orders and profile settings</p>
+            <div class="banner-pills">
+                <span class="b-pill pill-verified"><i class="fas fa-check-circle"></i> Verified Member</span>
+                {% if profile.role == 'seller' %}
+                <span class="b-pill pill-seller"><i class="fas fa-store"></i> Seller Mode</span>
+                {% else %}
+                <span class="b-pill pill-buyer"><i class="fas fa-shopping-bag"></i> Buyer Mode</span>
+                {% endif %}
+            </div>
+        </div>
+        {% if profile.role == 'seller' %}
+        <a href="{% url 'sell' %}" class="banner-action">
+            <i class="fas fa-plus-circle"></i> List New Item
+        </a>
+        {% else %}
+        <a href="{% url 'products' %}" class="banner-action">
+            <i class="fas fa-store"></i> Browse Products
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- ── Stats ───────────────────────────────────────────── -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-tag"></i></div>
+            <div class="stat-num">{{ my_products.count }}</div>
+            <div class="stat-lbl">Total Listings</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-num">{{ active_listings }}</div>
+            <div class="stat-lbl">Active Now</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-shopping-bag"></i></div>
+            <div class="stat-num">{{ my_orders.count }}</div>
+            <div class="stat-lbl">Orders Placed</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon"><i class="fas fa-envelope"></i></div>
+            <div class="stat-num">{{ unread_msgs }}</div>
+            <div class="stat-lbl">Unread Messages</div>
+        </div>
+    </div>
+
+    <!-- ── Tabs ────────────────────────────────────────────── -->
+    <div class="dash-tabs">
+        <button class="tab-btn active" onclick="switchTab('listings', this)">
+            <i class="fas fa-tag"></i> My Listings
+        </button>
+        <button class="tab-btn" onclick="switchTab('orders', this)">
+            <i class="fas fa-shopping-bag"></i> My Orders
+        </button>
+        <button class="tab-btn" onclick="switchTab('earnings', this)">
+            <i class="fas fa-wallet"></i> Earnings
+        </button>
+        <button class="tab-btn" onclick="switchTab('profile', this)">
+            <i class="fas fa-user-circle"></i> Profile Settings
+        </button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB 1 — MY LISTINGS
+    ══════════════════════════════════════════════════════════ -->
+    <div id="tab-listings" class="tab-content active">
+        <div class="section-topbar">
+            <h2>My Listed Items</h2>
+            <a href="{% url 'sell' %}" class="btn-primary" style="font-size:0.88rem;padding:0.5rem 1.2rem;text-decoration:none;">
+                <i class="fas fa-plus"></i> Add New Listing
+            </a>
+        </div>
+        <div class="listings-grid">
+            {% for product in my_products %}
+            <div class="listing-card">
+                <div class="listing-img">
+                    {% with product.images.first as img %}
+                    {% if img %}
+                    <img src="{{ img.image.url }}" alt="{{ product.title }}" loading="lazy">
+                    {% else %}
+                    <div class="no-img"><i class="fas fa-image"></i></div>
+                    {% endif %}
+                    {% endwith %}
+                    <span class="status-pill s-{{ product.status }}">{{ product.get_status_display }}</span>
+                </div>
+                <div class="listing-body">
+                    <div class="listing-title">{{ product.title }}</div>
+                    <div class="listing-price">Rs. {{ product.price }}</div>
+                    <div class="listing-meta">
+                        <i class="fas fa-calendar-alt"></i> {{ product.created_at|date:"d M Y" }} &bull;
+                        <i class="fas fa-images"></i> {{ product.images.count }} photo{{ product.images.count|pluralize }}
+                    </div>
+                    <div class="listing-actions">
+                        <a href="{% url 'product_detail' product.pk %}" class="act-btn act-view">
+                            <i class="fas fa-eye"></i> View
+                        </a>
+                        <form method="POST" action="{% url 'delete_product' product.pk %}" style="flex:1;">
+                            {% csrf_token %}
+                            <button type="submit" class="act-btn act-delete" style="width:100%;"
+                                onclick="return confirm('Delete this listing permanently?')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-box">
+                <i class="fas fa-box-open"></i>
+                <h3>No listings yet</h3>
+                {% if profile.role == 'seller' %}
+                <p>Start selling your electronics today!</p>
+                <a href="{% url 'sell' %}" class="btn-primary" style="text-decoration:none;padding:0.7rem 1.6rem;display:inline-flex;gap:6px;">
+                    <i class="fas fa-plus"></i> List Your First Item
+                </a>
+                {% else %}
+                <p>You're in <strong>Buyer mode</strong>. Switch to Seller in Profile Settings to start listing.</p>
+                <button onclick="switchTab('profile', document.querySelectorAll('.tab-btn')[2])"
+                    class="btn-primary" style="border:none;cursor:pointer;padding:0.7rem 1.6rem;gap:6px;display:inline-flex;">
+                    <i class="fas fa-toggle-on"></i> Go to Profile Settings
+                </button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB 2 — MY ORDERS
+    ══════════════════════════════════════════════════════════ -->
+    <div id="tab-orders" class="tab-content">
+        <div class="section-topbar">
+            <h2>My Orders</h2>
+        </div>
+        {% if my_orders %}
+        <div class="orders-card">
+            <div class="orders-head">
+                <div>Product</div>
+                <div>Amount</div>
+                <div>Date</div>
+                <div>Status</div>
+            </div>
+            {% for order in my_orders %}
+            <div class="order-row">
+                <div class="order-title">{{ order.product.title }}</div>
+                <div class="order-amount">Rs. {{ order.amount }}</div>
+                <div class="order-date">{{ order.created_at|date:"d M Y" }}</div>
+                <div><span class="os-pill os-{{ order.status }}">{{ order.get_status_display }}</span></div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-box" style="border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);background:white;">
+            <i class="fas fa-shopping-bag"></i>
+            <h3>No orders yet</h3>
+            <p><a href="{% url 'products' %}" style="color:var(--primary);font-weight:600;">Browse products</a> and place your first order!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════
+         TAB 3 — PROFILE SETTINGS
+    ══════════════════════════════════════════════════════════ -->
+    <div id="tab-earnings" class="tab-content">
+        <!-- Earnings Summary Cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;">
+            <div style="background:white;border-radius:var(--radius-lg);padding:1.2rem;border:1.5px solid var(--gray-200);">
+                <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;color:var(--gray-500);margin-bottom:6px;">Total Earned</div>
+                <div style="font-size:1.6rem;font-weight:800;color:var(--success);font-family:'JetBrains Mono',monospace;">Rs. {{ total_earned }}</div>
+                <div style="font-size:0.75rem;color:var(--gray-400);margin-top:3px;">After {{ commission_rate }}% AlphaMart commission</div>
+            </div>
+            <div style="background:white;border-radius:var(--radius-lg);padding:1.2rem;border:1.5px solid #fde68a;">
+                <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;color:var(--warning);margin-bottom:6px;">Pending Release</div>
+                <div style="font-size:1.6rem;font-weight:800;color:var(--warning);font-family:'JetBrains Mono',monospace;">Rs. {{ pending_earnings }}</div>
+                <div style="font-size:0.75rem;color:var(--gray-400);margin-top:3px;">Held until delivery confirmed</div>
+            </div>
+            <div style="background:white;border-radius:var(--radius-lg);padding:1.2rem;border:1.5px solid #bbf7d0;">
+                <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;color:var(--success);margin-bottom:6px;">Available Balance</div>
+                <div style="font-size:1.6rem;font-weight:800;color:var(--success);font-family:'JetBrains Mono',monospace;">Rs. {{ available_bal }}</div>
+                <div style="font-size:0.75rem;color:var(--gray-400);margin-top:3px;">Ready to withdraw</div>
+            </div>
+            <div style="background:white;border-radius:var(--radius-lg);padding:1.2rem;border:1.5px solid var(--gray-200);">
+                <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;color:var(--gray-500);margin-bottom:6px;">Total Paid Out</div>
+                <div style="font-size:1.6rem;font-weight:800;color:var(--gray-700);font-family:'JetBrains Mono',monospace;">Rs. {{ paid_out_total }}</div>
+                <div style="font-size:0.75rem;color:var(--gray-400);margin-top:3px;">Already transferred to you</div>
+            </div>
+        </div>
+
+        <!-- Commission Info Banner -->
+        <div style="background:var(--primary-bg);border:1.5px solid #bfdbfe;border-radius:var(--radius-lg);padding:14px 18px;margin-bottom:1.5rem;display:flex;align-items:center;gap:10px;">
+            <i class="fas fa-info-circle" style="color:var(--primary);font-size:1.1rem;flex-shrink:0;"></i>
+            <div style="font-size:0.85rem;color:var(--primary);">
+                <strong>AlphaMart charges {{ commission_rate }}% commission</strong> on every sale.
+                If your item sells for <strong>Rs. 10,000</strong>, you receive <strong>Rs. {{ 10000|add:-1000 }}</strong> and AlphaMart keeps <strong>Rs. 1,000</strong>.
+                Minimum payout: <strong>Rs. 500</strong>. Processing time: 2–3 working days.
+            </div>
+        </div>
+
+        <!-- Request Payout Form -->
+        {% if available_bal > 0 %}
+        <div style="background:white;border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.5rem;margin-bottom:1.5rem;">
+            <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:8px;">
+                <i class="fas fa-money-bill-wave" style="color:var(--success);"></i> Request Payout
+            </h3>
+            <form method="POST" action="{% url 'request_payout' %}">
+                {% csrf_token %}
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:end;">
+                    <div>
+                        <label style="display:block;font-size:0.82rem;font-weight:700;color:var(--gray-600);margin-bottom:4px;">Amount (Rs.)</label>
+                        <input type="number" name="amount" placeholder="Min Rs. 500" max="{{ available_bal }}"
+                            style="width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:0.9rem;font-family:inherit;outline:none;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.82rem;font-weight:700;color:var(--gray-600);margin-bottom:4px;">Pay via</label>
+                        <select name="method" style="width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:0.9rem;font-family:inherit;outline:none;">
+                            <option value="esewa">eSewa</option>
+                            <option value="khalti">Khalti</option>
+                            <option value="bank">Bank Transfer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:0.82rem;font-weight:700;color:var(--gray-600);margin-bottom:4px;">Account Number / ID</label>
+                        <input type="text" name="account_number" placeholder="98XXXXXXXX or bank account"
+                            style="width:100%;padding:8px 10px;border:1.5px solid var(--gray-200);border-radius:var(--radius);font-size:0.9rem;font-family:inherit;outline:none;">
+                    </div>
+                    <button type="submit" style="background:var(--success);color:white;border:none;border-radius:var(--radius);padding:9px 18px;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit;white-space:nowrap;">
+                        <i class="fas fa-paper-plane"></i> Request
+                    </button>
+                </div>
+            </form>
+        </div>
+        {% else %}
+        <div style="background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);padding:1.2rem 1.5rem;margin-bottom:1.5rem;color:var(--gray-500);font-size:0.9rem;">
+            <i class="fas fa-lock" style="margin-right:6px;"></i> No available balance to withdraw yet. Sell products to earn!
+        </div>
+        {% endif %}
+
+        <!-- Earnings History -->
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Sales Earnings History</h3>
+        {% if my_earnings %}
+        <div style="background:white;border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:1.5rem;">
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;padding:10px 16px;background:var(--gray-50);border-bottom:1px solid var(--gray-200);font-size:0.78rem;font-weight:700;text-transform:uppercase;color:var(--gray-500);">
+                <span>Product</span><span>Sold For</span><span>Commission</span><span>You Get</span><span>Status</span>
+            </div>
+            {% for earning in my_earnings %}
+            <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr;padding:12px 16px;border-bottom:1px solid var(--gray-100);font-size:0.88rem;align-items:center;">
+                <span style="font-weight:600;color:var(--gray-800);">{{ earning.order.product.title|truncatechars:30 }}</span>
+                <span style="font-family:'JetBrains Mono',monospace;color:var(--gray-700);">Rs. {{ earning.gross_amount }}</span>
+                <span style="font-family:'JetBrains Mono',monospace;color:var(--danger);">-Rs. {{ earning.commission }}</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--success);">Rs. {{ earning.net_amount }}</span>
+                <span>
+                    {% if earning.status == 'pending' %}
+                    <span style="background:var(--warning-bg);color:var(--warning);padding:2px 8px;border-radius:999px;font-size:0.75rem;font-weight:700;">Pending</span>
+                    {% elif earning.status == 'available' %}
+                    <span style="background:var(--success-bg);color:var(--success);padding:2px 8px;border-radius:999px;font-size:0.75rem;font-weight:700;">Available</span>
+                    {% else %}
+                    <span style="background:var(--gray-100);color:var(--gray-500);padding:2px 8px;border-radius:999px;font-size:0.75rem;font-weight:700;">Paid Out</span>
+                    {% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="fas fa-chart-line"></i><h3>No sales yet</h3><p>Your earnings will appear here after your first sale.</p></div>
+        {% endif %}
+
+        <!-- Payout Requests History -->
+        {% if my_payouts %}
+        <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">Payout Requests</h3>
+        <div style="background:white;border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);overflow:hidden;">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;padding:10px 16px;background:var(--gray-50);border-bottom:1px solid var(--gray-200);font-size:0.78rem;font-weight:700;text-transform:uppercase;color:var(--gray-500);">
+                <span>Date</span><span>Amount</span><span>Method</span><span>Account</span><span>Status</span>
+            </div>
+            {% for p in my_payouts %}
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;padding:12px 16px;border-bottom:1px solid var(--gray-100);font-size:0.88rem;align-items:center;">
+                <span style="color:var(--gray-500);">{{ p.created_at|date:"d M Y" }}</span>
+                <span style="font-family:'JetBrains Mono',monospace;font-weight:700;">Rs. {{ p.amount }}</span>
+                <span>{{ p.get_method_display }}</span>
+                <span style="color:var(--gray-500);">{{ p.account_number }}</span>
+                <span>
+                    {% if p.status == 'pending' %}
+                    <span style="background:var(--warning-bg);color:var(--warning);padding:2px 8px;border-radius:999px;font-size:0.75rem;font-weight:700;">Pending</span>
+                    {% elif p.status == 'approved' %}
+                    <span style="background:var(--primary-bg);color:var(--primary);padding:2px 8px;border-radius:999px;font-size:0.75rem;font-weight:700;">Approved</span>
+                    {% elif p.status == 'paid' %}
+                    <span style="background:var(--success-bg);color:var(--success);padding:2px 8px;border-radius:999px;font-size:0.75rem;font-weight:700;">Paid ✓</span>
+                    {% else %}
+                    <span style="background:var(--danger-bg);color:var(--danger);padding:2px 8px;border-radius:999px;font-size:0.75rem;font-weight:700;">Rejected</span>
+                    {% endif %}
+                    {% if p.note %}<div style="font-size:0.75rem;color:var(--gray-400);margin-top:2px;">{{ p.note }}</div>{% endif %}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div id="tab-profile" class="tab-content">
+        <div class="profile-layout">
+
+            <!-- LEFT: Identity card + role toggle -->
+            <div>
+                <!-- Identity Card -->
+                <div class="id-card">
+                    <div class="id-card-header">
+                        <div class="id-avatar">
+                            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                        </div>
+                        <h3>{{ user.get_full_name }}</h3>
+                        <p>{{ user.email }}</p>
+                        <div>
+                            {% if profile.role == 'seller' %}
+                            <span class="id-badge ib-seller"><i class="fas fa-store"></i> Seller Account</span>
+                            {% else %}
+                            <span class="id-badge ib-buyer"><i class="fas fa-shopping-bag"></i> Buyer Account</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="id-body">
+                        <div class="id-row">
+                            <i class="fas fa-phone"></i>
+                            <div>
+                                <span class="lbl">Phone</span>
+                                <span class="val">{{ profile.phone|default:"Not set" }}</span>
+                            </div>
+                        </div>
+                        <div class="id-row">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div>
+                                <span class="lbl">Address</span>
+                                <span class="val">{{ profile.address|default:"Not set" }}</span>
+                            </div>
+                        </div>
+                        <div class="id-row">
+                            <i class="fas fa-mail-bulk"></i>
+                            <div>
+                                <span class="lbl">Postal Code</span>
+                                <span class="val">{{ profile.postal_code|default:"Not set" }}</span>
+                            </div>
+                        </div>
+                        <div class="id-row">
+                            <i class="fas fa-calendar-alt"></i>
+                            <div>
+                                <span class="lbl">Member Since</span>
+                                <span class="val">{{ profile.created_at|date:"d M Y" }}</span>
+                            </div>
+                        </div>
+                        <div class="id-row">
+                            <i class="fas fa-tag"></i>
+                            <div>
+                                <span class="lbl">Total Listings</span>
+                                <span class="val">{{ my_products.count }}</span>
+                            </div>
+                        </div>
+                        <div class="id-row">
+                            <i class="fas fa-shopping-bag"></i>
+                            <div>
+                                <span class="lbl">Orders Placed</span>
+                                <span class="val">{{ my_orders.count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Role Toggle Card -->
+                <div class="role-card" id="roleCard">
+                    <h4><i class="fas fa-toggle-on" style="color:var(--primary);"></i> Switch Your Role</h4>
+                    <form method="POST" action="{% url 'toggle_role' %}">
+                        {% csrf_token %}
+                        <div class="role-options">
+                            <label class="role-opt buyer-opt">
+                                <input type="radio" name="role" value="buyer"
+                                    {% if profile.role == 'buyer' %}checked{% endif %}>
+                                <div class="role-check-mark"><i class="fas fa-check"></i></div>
+                                <div class="role-opt-icon">🛒</div>
+                                <div class="role-opt-name">Buyer</div>
+                                <div class="role-opt-desc">Browse &amp; purchase items</div>
+                            </label>
+                            <label class="role-opt seller-opt">
+                                <input type="radio" name="role" value="seller"
+                                    {% if profile.role == 'seller' %}checked{% endif %}>
+                                <div class="role-check-mark"><i class="fas fa-check"></i></div>
+                                <div class="role-opt-icon">🏪</div>
+                                <div class="role-opt-name">Seller</div>
+                                <div class="role-opt-desc">List &amp; sell your items</div>
+                            </label>
+                        </div>
+                        <button type="submit" class="role-apply-btn">
+                            <i class="fas fa-save"></i> Apply Role Change
+                        </button>
+                    </form>
+                    <p class="role-note">
+                        <i class="fas fa-info-circle"></i>
+                        Buyers can shop. Sellers can list items for sale. Switch anytime — no data is lost.
+                    </p>
+                </div>
+            </div>
+
+            <!-- RIGHT: Edit form -->
+            <div class="edit-card">
+                <div class="edit-card-title">
+                    <i class="fas fa-user-edit" style="color:var(--primary);"></i> Edit Profile
+                </div>
+
+                <form method="POST" action="{% url 'update_profile' %}">
+                    {% csrf_token %}
+                    <div class="form-grid">
+                        <div class="fg">
+                            <label>First Name <span style="color:var(--danger);">*</span></label>
+                            <input type="text" name="first_name" value="{{ user.first_name }}" required placeholder="First name">
+                        </div>
+                        <div class="fg">
+                            <label>Last Name <span style="color:var(--danger);">*</span></label>
+                            <input type="text" name="last_name" value="{{ user.last_name }}" required placeholder="Last name">
+                        </div>
+                        <div class="fg">
+                            <label>Email Address</label>
+                            <input type="email" value="{{ user.email }}" disabled title="Email cannot be changed">
+                        </div>
+                        <div class="fg">
+                            <label>Phone (Nepal)</label>
+                            <input type="tel" name="phone" value="{{ profile.phone }}" placeholder="+977-98XXXXXXXX">
+                        </div>
+                        <div class="fg full">
+                            <label>Address</label>
+                            <input type="text" name="address" value="{{ profile.address }}" placeholder="Ward, Street, City, District">
+                        </div>
+                        <div class="fg">
+                            <label>Postal Code</label>
+                            <input type="text" name="postal_code" value="{{ profile.postal_code }}" placeholder="e.g. 44600">
+                        </div>
+                        <div class="fg" style="justify-content:flex-end;">
+                            <button type="submit" class="save-btn">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Change Password -->
+                <div class="pw-section">
+                    <h4><i class="fas fa-lock" style="color:var(--primary);"></i> Change Password</h4>
+                    <form method="POST" action="{% url 'update_profile' %}">
+                        {% csrf_token %}
+                        <!-- Pass hidden fields so profile data isn't cleared -->
+                        <input type="hidden" name="first_name"  value="{{ user.first_name }}">
+                        <input type="hidden" name="last_name"   value="{{ user.last_name }}">
+                        <input type="hidden" name="phone"       value="{{ profile.phone }}">
+                        <input type="hidden" name="address"     value="{{ profile.address }}">
+                        <input type="hidden" name="postal_code" value="{{ profile.postal_code }}">
+                        <div class="pw-grid">
+                            <div>
+                                <label style="font-weight:600;font-size:0.82rem;color:var(--gray-600);display:block;margin-bottom:4px;">
+                                    New Password <span style="color:var(--gray-400);font-weight:400;">(min 8 characters)</span>
+                                </label>
+                                <div class="pw-wrap">
+                                    <input type="password" name="new_password" id="pwInput" placeholder="Enter new password">
+                                    <button type="button" class="pw-eye" onclick="togglePw()">
+                                        <i class="fas fa-eye" id="pwIcon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="display:flex;align-items:flex-end;">
+                                <button type="submit" class="save-btn" style="background:#16a34a;width:100%;justify-content:center;">
+                                    <i class="fas fa-key"></i> Update Password
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Account / Danger zone -->
+                <div class="danger-zone">
+                    <h4><i class="fas fa-sign-out-alt"></i> Account</h4>
+                    <a href="{% url 'logout' %}" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i> Sign Out
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div><!-- /profile tab -->
+
+</div><!-- /dash-page -->
+{% endblock %}
+
+{% block extra_js %}
+<script>
+/* Tab switching */
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+    window.location.hash = name;
+}
+
+/* Password show/hide */
+function togglePw() {
+    const inp  = document.getElementById('pwInput');
+    const icon = document.getElementById('pwIcon');
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        inp.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+
+/* Open correct tab from URL hash on load */
+window.addEventListener('DOMContentLoaded', () => {
+    const hash = window.location.hash.replace('#', '');
+    const tabs  = { listings: 0, orders: 1, profile: 2 };
+    if (tabs[hash] !== undefined) {
+        const btn = document.querySelectorAll('.tab-btn')[tabs[hash]];
+        switchTab(hash, btn);
+    }
+});
+</script>
+{% endblock %}

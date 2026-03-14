@@ -1,0 +1,136 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}Sign In{% endblock %}
+
+{% block extra_css %}
+<style>
+.auth-page {
+    min-height: calc(100vh - 200px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem 1rem;
+    background: linear-gradient(135deg, #f9fafb, #eff6ff);
+}
+.auth-card {
+    max-width: 440px; width: 100%;
+    background: white; border-radius: 24px;
+    padding: 2.5rem; box-shadow: 0 25px 60px rgba(0,0,0,0.1);
+}
+.auth-logo { text-align: center; margin-bottom: 1.5rem; }
+.auth-logo .logo-big {
+    width: 60px; height: 60px; background: var(--primary);
+    border-radius: 16px; display: flex; align-items: center;
+    justify-content: center; margin: 0 auto 0.8rem;
+    font-size: 1.6rem; color: white;
+}
+.auth-logo h1 { font-size: 1.6rem; font-weight: 800; color: var(--gray-900); }
+.auth-logo p  { color: var(--gray-500); font-size: 0.9rem; }
+.input-group { margin-bottom: 1.1rem; }
+.input-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.87rem; color: var(--gray-700); }
+.input-wrap { position: relative; }
+.input-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray-400); font-size: 0.9rem; }
+.input-wrap input {
+    width: 100%; padding: 0.75rem 0.9rem 0.75rem 2.5rem;
+    border: 2px solid var(--gray-200); border-radius: var(--radius-md);
+    font-size: 0.93rem; font-family: inherit; transition: var(--transition);
+    box-sizing: border-box;
+}
+.input-wrap input:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+.remember-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; font-size: 0.85rem; }
+.remember-row label { display: flex; align-items: center; gap: 6px; color: var(--gray-600); cursor: pointer; }
+.auth-submit {
+    width: 100%; padding: 0.9rem;
+    background: var(--primary); color: white;
+    border: none; border-radius: var(--radius-md);
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: var(--transition);
+}
+.auth-submit:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.auth-divider { text-align: center; margin: 1.2rem 0; color: var(--gray-400); font-size: 0.85rem; position: relative; }
+.auth-divider::before, .auth-divider::after {
+    content: ''; position: absolute; top: 50%; width: 42%; height: 1px;
+    background: var(--gray-200);
+}
+.auth-divider::before { left: 0; } .auth-divider::after { right: 0; }
+.auth-footer { text-align: center; margin-top: 1.2rem; color: var(--gray-500); font-size: 0.88rem; }
+.auth-footer a { color: var(--primary); font-weight: 600; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <div class="logo-big"><i class="fas fa-bolt"></i></div>
+            <h1>Welcome Back</h1>
+            <p>Sign in to your Alpha Mart account</p>
+        </div>
+
+        <form method="POST" action="{% url 'login' %}">
+            {% csrf_token %}
+            <div class="input-group">
+                <label>Email Address</label>
+                <div class="input-wrap">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" name="email" placeholder="your@email.com" required autocomplete="email"
+                           value="{{ request.POST.email }}">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <div class="input-wrap">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password" id="pwInput">
+                    <button type="button" onclick="togglePw()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:0.9rem;">
+                        <i class="fas fa-eye" id="pwIcon"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="remember-row">
+                <label><input type="checkbox" name="remember"> Remember me</label>
+                <a href="{% url 'contact' %}" style="color:var(--primary);font-weight:600;">Forgot password?</a>
+            </div>
+            <button type="submit" class="auth-submit">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </button>
+
+            {% if show_resend %}
+            <div style="margin-top:14px;padding:14px;background:#fff7ed;border:1.5px solid #fed7aa;border-radius:10px;font-size:0.88rem;">
+                <strong style="color:#c2410c;">📧 Email not verified yet.</strong>
+                <p style="color:#92400e;margin:6px 0 0;">Didn't receive the email? Check your spam folder or resend:</p>
+                <form method="POST" action="{% url 'resend_verification' %}" style="margin-top:10px;">
+                    {% csrf_token %}
+                    <input type="hidden" name="email" value="{{ unverified_email }}">
+                    <button type="submit" style="background:#ea580c;color:white;border:none;border-radius:999px;padding:8px 20px;font-size:0.85rem;font-weight:700;cursor:pointer;font-family:inherit;">
+                        Resend Verification Email
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+
+        </form>
+
+        <div class="auth-divider">or</div>
+
+        <div class="auth-footer">
+            <p>Don't have an account? <a href="{% url 'register' %}">Create one free</a></p>
+            <p style="margin-top:8px;"><a href="{% url 'index' %}">← Back to Home</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePw() {
+    const inp  = document.getElementById('pwInput');
+    const icon = document.getElementById('pwIcon');
+    if (inp.type === 'password') {
+        inp.type = 'text';
+        icon.classList.replace('fa-eye', 'fa-eye-slash');
+    } else {
+        inp.type = 'password';
+        icon.classList.replace('fa-eye-slash', 'fa-eye');
+    }
+}
+</script>
+{% endblock %}

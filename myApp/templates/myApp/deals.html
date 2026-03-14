@@ -1,0 +1,286 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}Deals{% endblock %}
+{% block nav_deals %}class="active"{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Hero */
+.deals-hero {
+    position: relative;
+    color: white;
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+    overflow: hidden;
+    min-height: 420px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.deals-hero video {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    z-index: 0;
+}
+.deals-hero::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.55);
+    z-index: 1;
+}
+.deals-hero h1 { font-size: 3.2rem; font-weight: 900; margin-bottom: 0.5rem; position: relative; z-index: 2; }
+.deals-hero p { font-size: 1.2rem; opacity: 0.9; position: relative; z-index: 2; }
+.hero-badges { display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap; position: relative; z-index: 2; }
+.hero-badge-pill {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    padding: 0.4rem 1.2rem;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* Countdown banner */
+.countdown-banner {
+    max-width: 1200px;
+    margin: 2.5rem auto 0;
+    padding: 0 2rem;
+}
+.countdown-card {
+    background: linear-gradient(135deg, #fff7ed, #ffedd5);
+    border: 2px solid #fed7aa;
+    border-radius: 2rem;
+    padding: 2rem 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+.countdown-text h2 { font-size: 1.6rem; font-weight: 800; color: #92400e; margin-bottom: 0.3rem; }
+.countdown-text p { color: #b45309; font-size: 0.95rem; }
+.countdown { display: flex; gap: 0.8rem; align-items: center; }
+.countdown-item {
+    background: white;
+    border-radius: 1rem;
+    padding: 1rem 1.5rem;
+    text-align: center;
+    min-width: 75px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+.countdown-num { font-size: 2.2rem; font-weight: 900; color: #2563eb; line-height: 1; }
+.countdown-label { font-size: 0.7rem; color: #94a3b8; margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 1px; }
+.countdown-sep { font-size: 2rem; font-weight: 900; color: #f97316; }
+
+/* Stats row */
+.deals-stats {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+.stat-card {
+    background: white;
+    border-radius: 1.2rem;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    border-top: 3px solid #2563eb;
+}
+.stat-card .num { font-size: 2rem; font-weight: 800; color: #2563eb; }
+.stat-card .lbl { font-size: 0.85rem; color: #64748b; margin-top: 0.2rem; }
+
+/* Products section */
+.deals-products {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 2rem 4rem;
+}
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f1f5f9;
+}
+.section-header-row h2 { font-size: 1.8rem; font-weight: 800; color: #0f172a; }
+
+/* Deal badge on cards */
+.deal-badge {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: linear-gradient(135deg, #f97316, #ef4444);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    z-index: 2;
+    animation: dealPulse 2s ease-in-out infinite;
+}
+@keyframes dealPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+
+.empty-state {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 5rem 2rem;
+    background: white;
+    border-radius: 2rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+}
+.empty-state i { font-size: 4rem; color: #fbbf24; display: block; margin-bottom: 1rem; }
+.empty-state h3 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: #1e293b; }
+.empty-state p { color: #64748b; margin-bottom: 1.5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero -->
+<section class="deals-hero">
+    <video autoplay muted loop playsinline>
+        <source src="{% static 'images/blackfriday.mp4' %}" type="video/mp4">
+    </video>
+    <h1 data-aos="fade-up">🔥 Best Deals & Offers</h1>
+    <p data-aos="fade-up" data-aos-delay="100">Fresh second-hand electronics at unbeatable prices</p>
+    <div class="hero-badges" data-aos="fade-up" data-aos-delay="200">
+        <span class="hero-badge-pill"><i class="fas fa-check-circle"></i> Verified Sellers</span>
+        <span class="hero-badge-pill"><i class="fas fa-tag"></i> Free Listing</span>
+        <span class="hero-badge-pill"><i class="fas fa-shield-alt"></i> Safe & Secure</span>
+        <span class="hero-badge-pill"><i class="fas fa-bolt"></i> New Deals Daily</span>
+    </div>
+</section>
+
+<!-- Countdown -->
+<div class="countdown-banner">
+    <div class="countdown-card" data-aos="fade-up">
+        <div class="countdown-text">
+            <h2>⚡ New Listings Every Day</h2>
+            <p>Check back daily for fresh deals from verified sellers</p>
+        </div>
+        <div class="countdown">
+            <div class="countdown-item">
+                <div class="countdown-num" id="hours">00</div>
+                <div class="countdown-label">Hours</div>
+            </div>
+            <span class="countdown-sep">:</span>
+            <div class="countdown-item">
+                <div class="countdown-num" id="mins">00</div>
+                <div class="countdown-label">Minutes</div>
+            </div>
+            <span class="countdown-sep">:</span>
+            <div class="countdown-item">
+                <div class="countdown-num" id="secs">00</div>
+                <div class="countdown-label">Seconds</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats -->
+<div class="deals-stats">
+    <div class="stat-card" data-aos="fade-up">
+        <div class="num">{{ products|length }}</div>
+        <div class="lbl">Active Listings</div>
+    </div>
+    <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="num">100%</div>
+        <div class="lbl">Verified Sellers</div>
+    </div>
+    <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="num">Free</div>
+        <div class="lbl">To List Items</div>
+    </div>
+    <div class="stat-card" data-aos="fade-up" data-aos-delay="300">
+        <div class="num">24/7</div>
+        <div class="lbl">Support Available</div>
+    </div>
+</div>
+
+<!-- Products -->
+<div class="deals-products">
+    <div class="section-header-row">
+        <h2>🛍️ Recent Listings</h2>
+        <a href="{% url 'products' %}" class="btn-primary" style="text-decoration:none;padding:0.7rem 1.8rem;">View All Products</a>
+    </div>
+
+    <div class="product-grid">
+        {% for product in products %}
+        <div class="product-card" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}00">
+            <div class="deal-badge">🔥 Deal</div>
+            {% if product.status == 'sold' %}<div class="product-badge sold">SOLD</div>{% endif %}
+            <div class="product-image">
+                {% with product.images.first as img %}
+                {% if img %}
+                <img src="{{ img.image.url }}" alt="{{ product.title }}">
+                {% else %}
+                <img src="https://placehold.co/400x400/2563eb/white?text={{ product.title|urlencode }}" alt="{{ product.title }}">
+                {% endif %}
+                {% endwith %}
+                <div class="image-overlay">
+                    <a href="{% url 'product_detail' product.pk %}" class="quick-view"><i class="fas fa-eye"></i></a>
+                </div>
+                <span class="image-count"><i class="fas fa-camera"></i> {{ product.images.count }}</span>
+            </div>
+            <div class="product-info">
+                <div class="product-category">{{ product.category.name|default:"Electronics" }}</div>
+                <h3 class="product-title">
+                    <a href="{% url 'product_detail' product.pk %}" style="color:inherit;text-decoration:none;">{{ product.title }}</a>
+                </h3>
+                <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.8rem;">
+                    <span style="background:#dcfce7;color:#16a34a;padding:0.2rem 0.6rem;border-radius:50px;font-size:0.75rem;font-weight:600;">{{ product.condition|default:"Good" }}</span>
+                </div>
+                <div class="product-price">
+                    <span class="current-price">Rs. {{ product.price }}</span>
+                </div>
+                <div class="product-seller">
+                    <img src="https://placehold.co/30x30/2563eb/white?text={{ product.seller.first_name|first }}" alt="seller">
+                    <span>{{ product.seller.get_full_name }}</span>
+                    <span class="verified"><i class="fas fa-check-circle"></i></span>
+                </div>
+                {% if product.status == 'available' %}
+                <a href="{% url 'add_to_cart' product.pk %}" class="add-to-cart-btn">
+                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                </a>
+                {% else %}
+                <button class="add-to-cart-btn" disabled style="opacity:0.5;">Sold Out</button>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <i class="fas fa-tags"></i>
+            <h3>No deals yet!</h3>
+            <p>Be the first to list something amazing for sale.</p>
+            <a href="{% url 'sell' %}" class="btn-primary" style="text-decoration:none;padding:0.8rem 2rem;">+ List an Item</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateCountdown() {
+    const now = new Date();
+    const h = 23 - now.getHours();
+    const m = 59 - now.getMinutes();
+    const s = 59 - now.getSeconds();
+    document.getElementById('hours').textContent = String(h).padStart(2, '0');
+    document.getElementById('mins').textContent = String(m).padStart(2, '0');
+    document.getElementById('secs').textContent = String(s).padStart(2, '0');
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+</script>
+{% endblock %}

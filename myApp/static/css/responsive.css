@@ -1,0 +1,113 @@
+/* ================================================================
+   ALPHA MART NEPAL — Responsive Stylesheet
+   ================================================================ */
+
+/* ── Tablet (≤ 1024px) ───────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .hero { grid-template-columns: 1fr; text-align: center; gap: 2rem; }
+    .hero-content h1, .hero h1 { font-size: 2.2rem; }
+    .hero-stats { justify-content: center; }
+    .hero-actions { justify-content: center; }
+    .hero-image { max-width: 520px; margin: 0 auto; }
+    .card-1, .card-2 { display: none; }
+    .trust-badges { justify-content: center; }
+    .payment-trust { justify-content: center; }
+
+    .promo-inner { grid-template-columns: 1fr; }
+    .promo-image { display: none; }
+
+    .footer-content { grid-template-columns: 1fr 1fr; }
+
+    .cart-wrap { grid-template-columns: 1fr; }
+    .checkout-wrap { grid-template-columns: 1fr; }
+    .products-wrap { grid-template-columns: 1fr; }
+    .product-detail-wrap { grid-template-columns: 1fr; }
+    .filter-sidebar { position: static; }
+    .product-detail-info { position: static; }
+}
+
+/* ── Mobile (≤ 768px) ────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .nav-menu { display: none; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: white; border-top: 1px solid var(--gray-200); padding: 1rem; box-shadow: var(--shadow-lg); z-index: 999; }
+    .nav-menu.open { display: flex; }
+    .nav-menu a { padding: 0.75rem 1rem; border-radius: var(--radius); font-size: 1rem; }
+    .navbar { position: relative; }
+    .menu-toggle { display: flex; }
+    .auth-buttons .btn-outline { display: none; }
+
+    .hero-section { padding: 2.5rem 0 2rem; }
+    .hero-content h1, .hero h1 { font-size: 1.9rem; }
+    .hero-slideshow { height: 280px; }
+    .hero-stats { gap: 1.2rem; }
+    .stat-item h3 { font-size: 1.3rem; }
+
+    .section-wrap { margin: 2rem auto; }
+    .section-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    .section-header h2 { font-size: 1.5rem; }
+
+    .category-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.8rem; }
+    .product-grid   { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.8rem; }
+    .product-image  { height: 160px; }
+
+    .trust-features { grid-template-columns: 1fr 1fr; gap: 1rem; margin: 2rem auto; }
+
+    .testimonial-grid { grid-template-columns: 1fr; }
+
+    .footer-content { grid-template-columns: 1fr; }
+    .footer-bottom  { flex-direction: column; text-align: center; }
+
+    .dashboard-banner { flex-direction: column; text-align: center; padding: 1.5rem; }
+    .dashboard-banner h2 { font-size: 1.3rem; }
+    .tab-nav { flex-wrap: wrap; }
+    .tab-btn { font-size: 0.82rem; padding: 0.45rem 0.9rem; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+
+    .sell-body { padding: 1.5rem; }
+    .sell-header { padding: 1.5rem; }
+    .form-row { grid-template-columns: 1fr; }
+
+    .cart-item { flex-direction: column; }
+    .cart-item-img { width: 100%; height: 180px; }
+
+    .auth-card { padding: 2rem 1.5rem; }
+
+    .page-hero h1 { font-size: 1.8rem; }
+
+    .contact-grid { grid-template-columns: 1fr; }
+
+    .promo-content { padding: 2rem; }
+    .promo-content h2 { font-size: 1.6rem; }
+
+    .dd-panel { width: 260px; }
+    .user-btn span { display: none; }
+
+    .product-detail-wrap { grid-template-columns: 1fr; }
+    .main-image { height: 300px; }
+}
+
+/* ── Small Mobile (≤ 480px) ──────────────────────────────────── */
+@media (max-width: 480px) {
+    .hero-content h1, .hero h1 { font-size: 1.6rem; }
+    .hero-slideshow { height: 220px; }
+    .hero-stats { flex-direction: column; gap: 0.8rem; }
+
+    .product-grid { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+    .product-image { height: 140px; }
+    .product-info  { padding: 0.8rem; }
+    .product-title { font-size: 0.85rem; }
+    .current-price { font-size: 1rem; }
+    .add-to-cart-btn { font-size: 0.82rem; padding: 0.55rem; }
+
+    .category-grid { grid-template-columns: repeat(3, 1fr); }
+
+    .trust-features { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr; }
+
+    .btn-large { padding: 0.65rem 1.3rem; font-size: 0.92rem; }
+    .hero-actions { flex-direction: column; }
+
+    .floating-card { display: none; }
+    .nav-actions .btn-outline, .nav-actions .btn-primary { display: none; }
+
+    .footer-content { gap: 1.5rem; }
+}

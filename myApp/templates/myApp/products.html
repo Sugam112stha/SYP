@@ -1,0 +1,183 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}All Products{% endblock %}
+{% block nav_products %}class="active"{% endblock %}
+
+{% block extra_css %}
+<style>
+.products-page-hero {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white; padding: 2.5rem 1.5rem; text-align: center;
+}
+.products-page-hero h1 { font-size: 2.2rem; font-weight: 800; margin-bottom: 0.4rem; }
+.products-page-hero p  { opacity: 0.88; font-size: 1rem; }
+.filters-card {
+    max-width: 1200px; margin: -1.5rem auto 2rem;
+    padding: 1.5rem; background: white;
+    border-radius: var(--radius-xl); box-shadow: var(--shadow-lg);
+    position: relative; z-index: 10;
+}
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 0.8rem; align-items: end;
+}
+.filter-group label { display: block; font-weight: 600; font-size: 0.8rem; color: var(--gray-600); margin-bottom: 4px; }
+.filter-group input,
+.filter-group select {
+    width: 100%; padding: 0.65rem 0.9rem;
+    border: 2px solid var(--gray-200); border-radius: var(--radius);
+    font-size: 0.9rem; font-family: inherit; transition: var(--transition);
+    background: white;
+}
+.filter-group input:focus, .filter-group select:focus {
+    border-color: var(--primary); outline: none;
+}
+.filter-btns { display: flex; gap: 6px; }
+.filter-btn {
+    padding: 0.65rem 1.2rem; border: none; border-radius: var(--radius);
+    font-weight: 600; cursor: pointer; font-family: inherit; font-size: 0.9rem;
+    transition: var(--transition); white-space: nowrap;
+}
+.filter-btn.primary { background: var(--primary); color: white; }
+.filter-btn.primary:hover { background: var(--primary-dark); }
+.filter-btn.secondary { background: var(--gray-100); color: var(--gray-600); }
+.filter-btn.secondary:hover { background: var(--gray-200); }
+.results-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.8rem;
+}
+.result-count { color: var(--gray-600); font-size: 0.9rem; font-weight: 500; }
+.sort-select {
+    padding: 6px 12px; border: 2px solid var(--gray-200);
+    border-radius: var(--radius); font-size: 0.88rem;
+    font-family: inherit; cursor: pointer; background: white;
+}
+.sort-select:focus { border-color: var(--primary); outline: none; }
+@media (max-width: 900px) {
+    .filter-grid { grid-template-columns: 1fr 1fr; }
+    .filter-btns { grid-column: 1/-1; }
+}
+@media (max-width: 560px) {
+    .filter-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Hero -->
+<div class="products-page-hero">
+    <h1>All Products</h1>
+    <p>Browse verified second-hand electronics across Nepal</p>
+</div>
+
+<div style="max-width:1200px;margin:0 auto;padding:0 1.5rem 4rem;">
+
+    <!-- Filters -->
+    <div class="filters-card">
+        <form method="GET" action="{% url 'products' %}">
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label>Search</label>
+                    <input type="text" name="q" placeholder="iPhone, MacBook, Camera..." value="{{ query }}">
+                </div>
+                <div class="filter-group">
+                    <label>Category</label>
+                    <select name="category">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.slug }}" {% if current_cat == cat.slug %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Condition</label>
+                    <select name="condition">
+                        <option value="">All Conditions</option>
+                        <option value="excellent" {% if current_cond == 'excellent' %}selected{% endif %}>Excellent</option>
+                        <option value="good"      {% if current_cond == 'good'      %}selected{% endif %}>Good</option>
+                        <option value="fair"      {% if current_cond == 'fair'      %}selected{% endif %}>Fair</option>
+                        <option value="poor"      {% if current_cond == 'poor'      %}selected{% endif %}>Poor</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Sort By</label>
+                    <select name="sort">
+                        <option value="newest"     {% if current_sort == 'newest'     %}selected{% endif %}>Newest First</option>
+                        <option value="price_low"  {% if current_sort == 'price_low'  %}selected{% endif %}>Price: Low → High</option>
+                        <option value="price_high" {% if current_sort == 'price_high' %}selected{% endif %}>Price: High → Low</option>
+                    </select>
+                </div>
+                <div class="filter-btns">
+                    <button type="submit" class="filter-btn primary"><i class="fas fa-filter"></i> Filter</button>
+                    <a href="{% url 'products' %}" class="filter-btn secondary"><i class="fas fa-times"></i></a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results bar -->
+    <div class="results-bar">
+        <p class="result-count">
+            {% if query %}<strong>Results for "{{ query }}"</strong> — {% endif %}
+            <strong>{{ products|length }}</strong> product{{ products|length|pluralize }} found
+        </p>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="product-grid">
+        {% for product in products %}
+        <div class="product-card" data-aos="fade-up">
+            {% if product.status == 'sold' %}<div class="product-badge sold">SOLD</div>{% endif %}
+            <div class="product-image">
+                <a href="{% url 'product_detail' product.pk %}" style="display:block;width:100%;height:100%;">
+                {% with product.images.first as img %}
+                {% if img %}
+                <img src="{{ img.image.url }}" alt="{{ product.title }}" loading="lazy">
+                {% else %}
+                <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--primary-bg);gap:8px;">
+                    <i class="fas fa-image" style="font-size:2.2rem;color:var(--primary);opacity:0.3;"></i>
+                    <span style="font-size:0.75rem;color:var(--gray-400);font-weight:500;">No photo</span>
+                </div>
+                {% endif %}
+                {% endwith %}
+                </a>
+                <span class="image-count"><i class="fas fa-camera"></i> {{ product.images.count }}</span>
+                <span class="condition-chip cond-{{ product.condition }}">{{ product.get_condition_display }}</span>
+            </div>
+            <div class="product-info">
+                <div class="product-category">{{ product.category.name|default:"Electronics" }}</div>
+                <h3 class="product-title">
+                    <a href="{% url 'product_detail' product.pk %}">{{ product.title }}</a>
+                </h3>
+                <div class="product-price">
+                    <span class="current-price mono">Rs. {{ product.price }}</span>
+                </div>
+                <div class="product-seller">
+                    <div class="seller-avatar-sm">{{ product.seller.first_name|first|upper }}</div>
+                    <span>{{ product.seller.get_full_name }}</span>
+                    <span class="verified-icon"><i class="fas fa-check-circle"></i></span>
+                </div>
+                {% if product.status == 'available' %}
+                <a href="{% url 'add_to_cart' product.pk %}" class="add-to-cart-btn">
+                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                </a>
+                {% else %}
+                <button class="add-to-cart-btn" disabled>Sold Out</button>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column:1/-1;" class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3>No products found</h3>
+            <p>{% if query %}Try different keywords or clear the filters.{% else %}No products listed yet.{% endif %}</p>
+            <a href="{% url 'sell' %}" class="btn-primary" style="text-decoration:none;padding:0.8rem 2rem;display:inline-flex;">
+                <i class="fas fa-plus"></i> List a Product
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

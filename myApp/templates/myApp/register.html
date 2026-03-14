@@ -1,0 +1,213 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}Create Account{% endblock %}
+
+{% block extra_css %}
+<style>
+.auth-page {
+    min-height: calc(100vh - 180px);
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem 1rem;
+    background: linear-gradient(135deg, #f9fafb, #eff6ff);
+}
+.auth-card {
+    max-width: 600px; width: 100%;
+    background: white; border-radius: 24px;
+    padding: 2.5rem; box-shadow: 0 25px 60px rgba(0,0,0,0.1);
+}
+.auth-logo { text-align: center; margin-bottom: 1.8rem; }
+.auth-logo .logo-big {
+    width: 60px; height: 60px; background: var(--primary);
+    border-radius: 16px; display: flex; align-items: center;
+    justify-content: center; margin: 0 auto 0.8rem;
+    font-size: 1.6rem; color: white;
+}
+.auth-logo h1 { font-size: 1.6rem; font-weight: 800; color: var(--gray-900); }
+.auth-logo p  { color: var(--gray-500); font-size: 0.9rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.input-group { margin-bottom: 1rem; }
+.input-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.85rem; color: var(--gray-700); }
+.input-group label .req { color: var(--danger); }
+.input-wrap { position: relative; }
+.input-wrap i.ico { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray-400); font-size: 0.88rem; pointer-events: none; }
+.input-wrap input, .input-wrap select {
+    width: 100%; padding: 0.72rem 0.9rem 0.72rem 2.5rem;
+    border: 2px solid var(--gray-200); border-radius: var(--radius-md);
+    font-size: 0.9rem; font-family: inherit; transition: var(--transition);
+    box-sizing: border-box; background: white;
+}
+.input-wrap input:focus, .input-wrap select:focus {
+    border-color: var(--primary); outline: none;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
+}
+.phone-row { display: flex; gap: 8px; }
+.phone-prefix {
+    flex-shrink: 0; padding: 0.72rem 0.9rem;
+    border: 2px solid var(--gray-200); border-radius: var(--radius-md);
+    background: var(--gray-50); color: var(--gray-600);
+    font-size: 0.9rem; font-weight: 600; white-space: nowrap;
+}
+.phone-row .input-wrap { flex: 1; }
+.pw-strength { height: 4px; border-radius: 4px; margin-top: 6px; background: var(--gray-200); transition: all 0.3s; }
+.pw-strength-text { font-size: 0.75rem; margin-top: 4px; font-weight: 600; }
+.terms-check { display: flex; align-items: flex-start; gap: 8px; margin: 1rem 0; font-size: 0.85rem; color: var(--gray-600); cursor: pointer; }
+.terms-check input { flex-shrink: 0; margin-top: 2px; }
+.terms-check a { color: var(--primary); font-weight: 600; }
+.auth-submit {
+    width: 100%; padding: 0.9rem;
+    background: var(--primary); color: white;
+    border: none; border-radius: var(--radius-md);
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    font-family: inherit; transition: var(--transition);
+}
+.auth-submit:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: var(--shadow-md); }
+.auth-footer { text-align: center; margin-top: 1.2rem; color: var(--gray-500); font-size: 0.88rem; }
+.auth-footer a { color: var(--primary); font-weight: 600; }
+@media (max-width: 560px) { .form-row { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-logo">
+            <div class="logo-big"><i class="fas fa-user-plus"></i></div>
+            <h1>Create Account</h1>
+            <p>Join Nepal's trusted electronics marketplace</p>
+        </div>
+
+        <form method="POST" action="{% url 'register' %}">
+            {% csrf_token %}
+
+            <!-- Name Row -->
+            <div class="form-row">
+                <div class="input-group">
+                    <label>First Name <span class="req">*</span></label>
+                    <div class="input-wrap">
+                        <i class="fas fa-user ico"></i>
+                        <input type="text" name="first_name" placeholder="Suman" required value="{{ request.POST.first_name }}">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Last Name <span class="req">*</span></label>
+                    <div class="input-wrap">
+                        <i class="fas fa-user ico"></i>
+                        <input type="text" name="last_name" placeholder="Karki" required value="{{ request.POST.last_name }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="input-group">
+                <label>Email Address <span class="req">*</span></label>
+                <div class="input-wrap">
+                    <i class="fas fa-envelope ico"></i>
+                    <input type="email" name="email" placeholder="suman@gmail.com" required autocomplete="email" value="{{ request.POST.email }}">
+                </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="input-group">
+                <label>Phone Number <span class="req">*</span> <span style="color:var(--gray-400);font-weight:400;">(Nepal)</span></label>
+                <div class="phone-row">
+                    <div class="phone-prefix">🇳🇵 +977</div>
+                    <div class="input-wrap">
+                        <i class="fas fa-phone ico"></i>
+                        <input type="tel" name="phone" placeholder="98XXXXXXXX" required value="{{ request.POST.phone }}" pattern="[0-9]{10}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address & City -->
+            <div class="input-group">
+                <label>Address <span class="req">*</span></label>
+                <div class="input-wrap">
+                    <i class="fas fa-map-marker-alt ico"></i>
+                    <input type="text" name="address" placeholder="Thamel, Kathmandu" required value="{{ request.POST.address }}">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="input-group">
+                    <label>City <span class="req">*</span></label>
+                    <div class="input-wrap">
+                        <i class="fas fa-city ico"></i>
+                        <input type="text" name="city" placeholder="Kathmandu" required value="{{ request.POST.city }}">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Postal Code</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-mail-bulk ico"></i>
+                        <input type="text" name="postal_code" placeholder="44600" value="{{ request.POST.postal_code }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Row -->
+            <div class="form-row">
+                <div class="input-group">
+                    <label>Password <span class="req">*</span></label>
+                    <div class="input-wrap">
+                        <i class="fas fa-lock ico"></i>
+                        <input type="password" name="password1" placeholder="Min 8 chars" required
+                               autocomplete="new-password" id="pw1" oninput="checkStrength(this.value)">
+                    </div>
+                    <div class="pw-strength" id="pwBar"></div>
+                    <div class="pw-strength-text" id="pwText"></div>
+                </div>
+                <div class="input-group">
+                    <label>Confirm Password <span class="req">*</span></label>
+                    <div class="input-wrap">
+                        <i class="fas fa-lock ico"></i>
+                        <input type="password" name="password2" placeholder="Repeat password" required
+                               autocomplete="new-password" id="pw2" oninput="checkMatch()">
+                    </div>
+                    <div class="pw-strength-text" id="matchText"></div>
+                </div>
+            </div>
+
+            <!-- Terms -->
+            <label class="terms-check">
+                <input type="checkbox" required>
+                I agree to the <a href="{% url 'terms' %}">Terms & Conditions</a> and Privacy Policy
+            </label>
+
+            <button type="submit" class="auth-submit">
+                <i class="fas fa-user-check"></i> Create My Account
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p>Already have an account? <a href="{% url 'login' %}">Sign in</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function checkStrength(val) {
+    const bar  = document.getElementById('pwBar');
+    const text = document.getElementById('pwText');
+    let score  = 0;
+    if (val.length >= 8)  score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val)) score++;
+    const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
+    const labels = ['Weak','Fair','Good','Strong'];
+    bar.style.background  = val ? colors[score - 1] || '#ef4444' : '#e2e8f0';
+    bar.style.width       = val ? (score * 25) + '%' : '100%';
+    text.textContent      = val ? labels[score - 1] || 'Weak' : '';
+    text.style.color      = val ? colors[score - 1] || '#ef4444' : '';
+}
+function checkMatch() {
+    const p1   = document.getElementById('pw1').value;
+    const p2   = document.getElementById('pw2').value;
+    const text = document.getElementById('matchText');
+    if (!p2) { text.textContent = ''; return; }
+    if (p1 === p2) { text.textContent = '✓ Passwords match'; text.style.color = '#22c55e'; }
+    else           { text.textContent = '✗ Passwords do not match'; text.style.color = '#ef4444'; }
+}
+</script>
+{% endblock %}

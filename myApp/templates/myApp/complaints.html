@@ -1,0 +1,87 @@
+{% extends 'myApp/base.html' %}
+{% load static %}
+{% block title %}Report Issue{% endblock %}
+
+{% block extra_css %}
+<style>
+.complaints-container{max-width:900px;margin:3rem auto;padding:0 2rem}
+.complaints-header{text-align:center;margin-bottom:2rem}
+.complaints-header h1{font-size:2.5rem;font-weight:800;color:#0f172a;margin-bottom:0.5rem}
+.complaints-header p{color:#64748b}
+.complaints-grid{display:grid;grid-template-columns:1fr 1fr;gap:2rem}
+.complaint-form-card{background:white;border-radius:2rem;padding:2.5rem;box-shadow:0 10px 30px -10px rgba(0,0,0,0.1)}
+.complaint-form-card h2{font-size:1.5rem;margin-bottom:1.5rem;color:#0f172a}
+.form-group{margin-bottom:1.2rem}
+.form-group label{display:block;margin-bottom:0.5rem;font-weight:600;color:#334155}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:0.9rem;border:2px solid #e2e8f0;border-radius:1rem;font-size:1rem;font-family:inherit;transition:all 0.3s;box-sizing:border-box}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#2563eb;outline:none}
+.submit-btn{width:100%;padding:1rem;background:#ef4444;color:white;border:none;border-radius:1rem;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.3s}
+.submit-btn:hover{background:#dc2626}
+.my-complaints h2{font-size:1.5rem;margin-bottom:1.5rem;color:#0f172a}
+.complaint-card{background:white;border-radius:1.5rem;padding:1.5rem;margin-bottom:1rem;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);border-left:4px solid #ef4444}
+.complaint-card.resolved{border-color:#22c55e}
+.complaint-subject{font-weight:700;margin-bottom:0.5rem;color:#0f172a}
+.complaint-status{display:inline-block;padding:0.2rem 0.8rem;border-radius:2rem;font-size:0.8rem;font-weight:600;margin-bottom:0.5rem}
+.status-open{background:#fee2e2;color:#dc2626}
+.status-in_review{background:#fef9c3;color:#92400e}
+.status-resolved{background:#dcfce7;color:#16a34a}
+.status-closed{background:#f1f5f9;color:#64748b}
+.complaint-meta{font-size:0.85rem;color:#64748b}
+.empty-state{text-align:center;padding:2rem;color:#94a3b8}
+@media(max-width:768px){.complaints-grid{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="complaints-container">
+    <div class="complaints-header">
+        <h1>🚩 Report an Issue</h1>
+        <p>Having a problem with a transaction? Let us know and we'll help resolve it.</p>
+    </div>
+
+    <div class="complaints-grid">
+        <!-- Submit Complaint -->
+        <div class="complaint-form-card">
+            <h2>Submit a Complaint</h2>
+            <form method="POST" action="{% url 'complaints' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Product ID (optional)</label>
+                    <input type="text" name="product_id" placeholder="Enter product ID if related to a specific listing">
+                </div>
+                <div class="form-group">
+                    <label>Subject</label>
+                    <input type="text" name="subject" placeholder="e.g. Item not as described" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea name="description" rows="5" placeholder="Describe your issue in detail..." required></textarea>
+                </div>
+                <button type="submit" class="submit-btn">
+                    <i class="fas fa-flag"></i> Submit Complaint
+                </button>
+            </form>
+        </div>
+
+        <!-- My Complaints -->
+        <div class="my-complaints">
+            <h2>My Complaints</h2>
+            {% for complaint in my_complaints %}
+            <div class="complaint-card {% if complaint.status == 'resolved' %}resolved{% endif %}">
+                <div class="complaint-subject">{{ complaint.subject }}</div>
+                <span class="complaint-status status-{{ complaint.status }}">{{ complaint.get_status_display }}</span>
+                <div class="complaint-meta">
+                    <i class="fas fa-calendar"></i> {{ complaint.created_at|date:"d M Y" }}
+                    {% if complaint.product %} • <i class="fas fa-box"></i> {{ complaint.product.title }}{% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-check-circle" style="font-size:3rem;color:#22c55e;margin-bottom:1rem;"></i>
+                <p>No complaints filed yet.<br>Hopefully everything is going smoothly! 😊</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
