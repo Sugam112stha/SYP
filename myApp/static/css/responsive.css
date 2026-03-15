@@ -28,6 +28,8 @@
 
 /* ── Mobile (≤ 768px) ────────────────────────────────────────── */
 @media (max-width: 768px) {
+    .nav-menu.open .mobile-only-auth { display: block !important; }
+
     .nav-menu { display: none; flex-direction: column; position: absolute; top: 100%; left: 0; right: 0; background: white; border-top: 1px solid var(--gray-200); padding: 1rem; box-shadow: var(--shadow-lg); z-index: 999; }
     .nav-menu.open { display: flex; }
     .nav-menu a { padding: 0.75rem 1rem; border-radius: var(--radius); font-size: 1rem; }

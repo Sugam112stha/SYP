@@ -54,12 +54,14 @@
             <li><a href="{% url 'deals' %}"      {% block nav_deals %}{% endblock %}>Deals</a></li>
             <li><a href="{% url 'about' %}"      {% block nav_about %}{% endblock %}>About</a></li>
             <li><a href="{% url 'contact' %}"    {% block nav_contact %}{% endblock %}>Contact</a></li>
-            <!-- Mobile-only auth links -->
+            <!-- Mobile-only auth links (hidden on desktop) -->
             {% if not user.is_authenticated %}
-            <li style="border-top:1px solid #e2e8f0;margin-top:8px;padding-top:8px;">
+            <li class="mobile-only-auth" style="border-top:1px solid #e2e8f0;margin-top:8px;padding-top:8px;display:none;">
                 <a href="{% url 'login' %}">Sign In</a>
             </li>
-            <li><a href="{% url 'register' %}" style="color:#2563eb;font-weight:700;">Join Free</a></li>
+            <li class="mobile-only-auth" style="display:none;">
+                <a href="{% url 'register' %}" style="color:#2563eb;font-weight:700;">Join Free</a>
+            </li>
             {% endif %}
         </ul>
 
