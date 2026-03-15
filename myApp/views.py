@@ -263,48 +263,36 @@ def register_view(request):
             first_name=first_name,
             last_name=last_name,
         )
-        user.is_active = False
+        # ── Email verification disabled until real Gmail is configured ──
+        # user.is_active = False  ← uncomment when Gmail is ready
+        user.is_active = True  # Temporary: activate immediately for testing without email setup later comment it.
         user.save()
 
-        # Create profile with verification token
-        token = str(uuid.uuid4())
         full_address = f"{address}, {city}" if city else address
         UserProfile.objects.create(
             user=user,
             phone=phone,
             address=full_address,
             postal_code=postal,
-            email_token=token,
+            is_verified=True,
         )
 
-        # Send verification email
-        try:
-            verify_url = request.build_absolute_uri(f'/verify-email/{token}/')
-            subject = 'Verify your AlphaMart account'
-            html_msg = render_to_string('myApp/email_verify.html', {
-                'first_name': first_name,
-                'verify_url': verify_url,
-            })
-            send_mail(
-                subject, '',
-                settings.DEFAULT_FROM_EMAIL,
-                [email],
-                html_message=html_msg,
-                fail_silently=False,
-            )
-            messages.success(request, f'Account created! Please check {email} to verify your account before logging in.')
-        except Exception as e:
-            # If email fails, activate anyway so user isn't locked out
-            user.is_active = True
-            user.save()
-            profile = UserProfile.objects.get(user=user)
-            profile.is_verified = True
-            profile.save()
-            messages.warning(request, f'Account created! Email verification failed ({e}). You can log in directly.')
-            login(request, user)
-            return redirect('index')
+        # ── Uncomment below when real Gmail is configured ──────────
+        # token = str(uuid.uuid4())
+        # profile.email_token = token
+        # profile.save()
+        # verify_url = request.build_absolute_uri(f'/verify-email/{token}/')
+        # send_mail('Verify your AlphaMart account', '',
+        #     settings.DEFAULT_FROM_EMAIL, [email],
+        #     html_message=render_to_string('myApp/email_verify.html',
+        #         {'first_name': first_name, 'verify_url': verify_url}))
+        # messages.success(request, f'Check {email} to verify your account.')
+        # return redirect('login')
+        # ───────────────────────────────────────────────────────────
 
-        return redirect('login')
+        login(request, user)
+        messages.success(request, f'Welcome to AlphaMart, {first_name}! Your account has been created.')
+        return redirect('index')
 
     return render(request, 'myApp/register.html', {'cart_count': 0})
 
@@ -320,9 +308,10 @@ def login_view(request):
         user = authenticate(request, username=email, password=password)
         if user is not None:
             # Check email verified
-            if not user.is_active:
-                messages.error(request, 'Please verify your email address before logging in. Check your inbox.')
-                return render(request, 'myApp/login.html', {'cart_count': 0, 'show_resend': True, 'unverified_email': email})
+            # Email verification check disabled until real Gmail configured
+            # if not user.is_active:
+            #     messages.error(request, 'Please verify your email.')
+            #     return render(request, 'myApp/login.html', {'cart_count': 0})
             login(request, user)
             messages.success(request, f'Welcome back, {user.first_name}!')
             next_url = request.GET.get('next', 'dashboard')
