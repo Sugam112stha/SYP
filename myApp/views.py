@@ -589,6 +589,10 @@ def checkout(request):
                 status='paid',
                 shipping_address=shipping_address,
             )
+            send_buyer_confirmation(order)
+            send_seller_notification(order)
+
+            
             item.product.status = 'sold'
             item.product.save()
 
@@ -952,3 +956,57 @@ def toggle_role(request):
         else:
             messages.error(request, 'Invalid role selection.')
     return redirect('dashboard')
+
+
+
+from django.core.mail import send_mail
+from django.conf import settings
+
+# Buyer Email
+def send_buyer_confirmation(order):
+    buyer_email = order.buyer.email
+    buyer_name = order.buyer.username
+    product_name = order.product.title
+    price = order.amount
+
+    subject = "Order Confirmation"
+
+    message = f"""
+Hello {buyer_name},
+
+Your order has been placed successfully.
+
+Product: {product_name}
+Price: {price}
+
+Thank you for shopping with us.
+
+Regards,
+Marketplace Team
+"""
+
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [buyer_email], fail_silently=False)
+
+# Seller Email
+def send_seller_notification(order):
+    seller_email = order.product.seller.email
+    seller_name = order.product.seller.username
+    product_name = order.product.title
+    buyer_name = order.buyer.username
+
+    subject = "Your Product Has Been Sold"
+
+    message = f"""
+Hello {seller_name},
+
+Good news! 🎉
+
+Your product "{product_name}" has been purchased by {buyer_name}.
+
+Please check your dashboard for order details.
+
+Regards,
+Marketplace Team
+"""
+
+    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [seller_email], fail_silently=False)
