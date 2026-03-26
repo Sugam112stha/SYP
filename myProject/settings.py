@@ -122,10 +122,15 @@ KHALTI_RETURN_URL   = 'http://localhost:8000/api/payment/khalti/verify/'
 KHALTI_WEBSITE_URL  = 'http://localhost:8000'
 
 # ── Email (Gmail) ─────────────────────────────────────────────
-EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST          = 'smtp.gmail.com'
-EMAIL_PORT          = 587
-EMAIL_USE_TLS       = True
-EMAIL_HOST_USER     = 'alphamart@gmail.com'
-EMAIL_HOST_PASSWORD = 'abcd efgh ijkl 1234'   
-DEFAULT_FROM_EMAIL  = 'AlphaMart Nepal <alphamart@gmail.com>'
+# Email Configuration (SMTP)
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
+EMAIL_HOST_USER = 'martalpha2026@gmail.com'
+EMAIL_HOST_PASSWORD = 'dfud ccgc zctc jmlj'
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
