@@ -20,12 +20,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',   # NEW — allows HTML frontend to call the API
+    'corsheaders',
     'myApp',
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',   # NEW — must be at the top
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -40,7 +40,7 @@ ROOT_URLCONF = 'myProject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],           # APP_DIRS=True already finds templates/myApp/ automatically
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -78,59 +78,52 @@ USE_TZ = True
 # Static files
 STATIC_URL = '/static/'
 
-# Media files (uploaded product images)
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Where Django redirects after login/logout
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/'
 
-
 # ─────────────────────────────────────────────────────────────────
-#  CORS — allow HTML frontend to call the Django API
-#  Run:  pip install django-cors-headers
+#  CORS
 # ─────────────────────────────────────────────────────────────────
-CORS_ALLOW_ALL_ORIGINS  = True      # OK for development/demo
-CORS_ALLOW_CREDENTIALS  = True      # needed for session-based auth (login)
+CORS_ALLOW_ALL_ORIGINS  = True
+CORS_ALLOW_CREDENTIALS  = True
 
 
 # ─────────────────────────────────────────────────────────────────
-#  eSewa Sandbox Settings
-#  Docs:  https://developer.esewa.com.np
-#  These are the official eSewa sandbox/test credentials
+#  eSewa Sandbox
+#  Test ID: 9806800001  Password: Nepal@123  Token: 123456
 # ─────────────────────────────────────────────────────────────────
 ESEWA_MERCHANT_ID  = 'EPAYTEST'
 ESEWA_SECRET_KEY   = '8gBm/:&EnhH.1/q'
 ESEWA_PAYMENT_URL  = 'https://rc-epay.esewa.com.np/api/epay/main/v2/form'
-ESEWA_SUCCESS_URL  = 'http://localhost:8000/api/payment/esewa/verify/'
-ESEWA_FAILURE_URL  = 'http://localhost:8000/payment-failed/'
+ESEWA_SUCCESS_URL  = 'http://localhost:8000/dashboard/'
+ESEWA_FAILURE_URL  = 'http://localhost:8000/payment-cancelled/'
 
 
 # ─────────────────────────────────────────────────────────────────
-#  Khalti Sandbox Settings
-#  Docs:  https://docs.khalti.com/khalti-epayment
-#  These are the official Khalti sandbox/test credentials
+#  Khalti Sandbox
+#  Test ID: 9800000001  MPIN: 1111  OTP: 987654
 # ─────────────────────────────────────────────────────────────────
 KHALTI_SECRET_KEY   = 'test_secret_key_dc74e0fd57cb46cd93832aee0a390234'
-KHALTI_INITIATE_URL = 'https://a.khalti.com/api/v2/epayment/initiate/'
-KHALTI_LOOKUP_URL   = 'https://a.khalti.com/api/v2/epayment/lookup/'
-KHALTI_RETURN_URL   = 'http://localhost:8000/api/payment/khalti/verify/'
+KHALTI_INITIATE_URL = 'https://dev.khalti.com/api/v2/epayment/initiate/'
+KHALTI_LOOKUP_URL   = 'https://dev.khalti.com/api/v2/epayment/lookup/'
+KHALTI_RETURN_URL   = 'http://localhost:8000/dashboard/'
 KHALTI_WEBSITE_URL  = 'http://localhost:8000'
 
-# ── Email (Gmail) ─────────────────────────────────────────────
-# Email Configuration (SMTP)
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-
-EMAIL_HOST_USER = 'martalpha2026@gmail.com'
+# ─────────────────────────────────────────────────────────────────
+#  Email (Gmail)
+# ─────────────────────────────────────────────────────────────────
+EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST          = 'smtp.gmail.com'
+EMAIL_PORT          = 587
+EMAIL_USE_TLS       = True
+EMAIL_HOST_USER     = 'martalpha2026@gmail.com'
 EMAIL_HOST_PASSWORD = 'dfud ccgc zctc jmlj'
-
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL  = EMAIL_HOST_USER

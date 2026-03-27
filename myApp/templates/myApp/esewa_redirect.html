@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head><title>Redirecting to eSewa...</title></head>
+<body>
+<p>Redirecting to eSewa, please wait...</p>
+<form id="esewaForm" action="{{ esewa_url }}" method="POST">
+    {% csrf_token %}
+    {% for key, value in esewa_params.items %}
+    <input type="hidden" name="{{ key }}" value="{{ value }}">
+    {% endfor %}
+</form>
+<script>
+    window.onload = function() {
+        document.getElementById('esewaForm').submit();
+    };
+</script>
+</body>
+</html>

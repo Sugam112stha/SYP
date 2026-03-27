@@ -7,17 +7,17 @@ from django.db.models import Q
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
+from decimal import Decimal
 import uuid
 from .models import Product, ProductImage, Category, Cart, Message, Complaint, Order, UserProfile, SellerEarning, PayoutRequest
 
 
 # AlphaMart commission rate (10%) — change this anytime
-COMMISSION_RATE = 0.10
+COMMISSION_RATE = Decimal('0.10')
 
 # ──────────────────────────────────────────────────────────────
 #  Helper: cart count for nav badge
 # ──────────────────────────────────────────────────────────────
-
 
 
 def _send_order_receipt(request, user, cart_items_data, subtotal, shipping, total, payment_method, shipping_address):
@@ -85,8 +85,8 @@ def index(request):
         'latest_product':     latest_product,
         'total_products':     total_products,
         'icon_cats':          icon_cats,
-        'cart_count': _cart_count(request),
-    'unread_msg_count': _unread_count(request),
+        'cart_count':         _cart_count(request),
+        'unread_msg_count':   _unread_count(request),
     })
 
 
@@ -139,7 +139,6 @@ def product_detail(request, pk):
         category=product.category, status='available'
     ).exclude(pk=pk)[:4]
 
-    # Count existing messages between this buyer and seller about this product
     existing_thread = 0
     if request.user.is_authenticated and request.user != product.seller:
         existing_thread = Message.objects.filter(
@@ -154,33 +153,33 @@ def product_detail(request, pk):
         'images':          images,
         'related':         related,
         'existing_thread': existing_thread,
-        'cart_count': _cart_count(request),
-    'unread_msg_count': _unread_count(request),
+        'cart_count':      _cart_count(request),
+        'unread_msg_count': _unread_count(request),
     })
 
 
 def categories_view(request):
     categories = Category.objects.all()
     return render(request, 'myApp/categories.html', {
-        'categories': categories,
-        'cart_count': _cart_count(request),
-    'unread_msg_count': _unread_count(request),
+        'categories':     categories,
+        'cart_count':     _cart_count(request),
+        'unread_msg_count': _unread_count(request),
     })
 
 
 def deals(request):
     products = Product.objects.filter(status='available').order_by('-created_at')[:12]
     return render(request, 'myApp/deals.html', {
-        'products':   products,
-        'cart_count': _cart_count(request),
-    'unread_msg_count': _unread_count(request),
+        'products':       products,
+        'cart_count':     _cart_count(request),
+        'unread_msg_count': _unread_count(request),
     })
 
 
 def about(request):
     return render(request, 'myApp/about.html', {
-        'cart_count': _cart_count(request),
-    'unread_msg_count': _unread_count(request),
+        'cart_count':     _cart_count(request),
+        'unread_msg_count': _unread_count(request),
     })
 
 
@@ -194,7 +193,6 @@ def contact(request):
         if not all([name, email, message_text]):
             messages.error(request, 'Please fill in all required fields.')
         else:
-            # In a real project you'd send an email here
             messages.success(request, f'Thank you {name}! Your message has been received. We will reply to {email} soon.')
             return redirect('contact')
 
@@ -207,15 +205,15 @@ def contact(request):
 
 def faq(request):
     return render(request, 'myApp/faq.html', {
-        'cart_count': _cart_count(request),
-    'unread_msg_count': _unread_count(request),
+        'cart_count':     _cart_count(request),
+        'unread_msg_count': _unread_count(request),
     })
 
 
 def terms(request):
     return render(request, 'myApp/terms.html', {
-        'cart_count': _cart_count(request),
-    'unread_msg_count': _unread_count(request),
+        'cart_count':     _cart_count(request),
+        'unread_msg_count': _unread_count(request),
     })
 
 
@@ -238,7 +236,6 @@ def register_view(request):
         password1  = request.POST.get('password1', '')
         password2  = request.POST.get('password2', '')
 
-        # Validation
         if not all([first_name, last_name, email, phone, password1, password2]):
             messages.error(request, 'Please fill in all required fields.')
             return render(request, 'myApp/register.html', {'cart_count': 0})
@@ -255,7 +252,6 @@ def register_view(request):
             messages.error(request, 'An account with this email already exists.')
             return render(request, 'myApp/register.html', {'cart_count': 0})
 
-        # Create user — inactive until email verified
         user = User.objects.create_user(
             username=email,
             email=email,
@@ -263,9 +259,7 @@ def register_view(request):
             first_name=first_name,
             last_name=last_name,
         )
-        # ── Email verification disabled until real Gmail is configured ──
-        # user.is_active = False  ← uncomment when Gmail is ready
-        user.is_active = True  # Temporary: activate immediately for testing without email setup later comment it.
+        user.is_active = True
         user.save()
 
         full_address = f"{address}, {city}" if city else address
@@ -276,19 +270,6 @@ def register_view(request):
             postal_code=postal,
             is_verified=True,
         )
-
-        # ── Uncomment below when real Gmail is configured ──────────
-        # token = str(uuid.uuid4())
-        # profile.email_token = token
-        # profile.save()
-        # verify_url = request.build_absolute_uri(f'/verify-email/{token}/')
-        # send_mail('Verify your AlphaMart account', '',
-        #     settings.DEFAULT_FROM_EMAIL, [email],
-        #     html_message=render_to_string('myApp/email_verify.html',
-        #         {'first_name': first_name, 'verify_url': verify_url}))
-        # messages.success(request, f'Check {email} to verify your account.')
-        # return redirect('login')
-        # ───────────────────────────────────────────────────────────
 
         login(request, user)
         messages.success(request, f'Welcome to AlphaMart, {first_name}! Your account has been created.')
@@ -307,11 +288,6 @@ def login_view(request):
 
         user = authenticate(request, username=email, password=password)
         if user is not None:
-            # Check email verified
-            # Email verification check disabled until real Gmail configured
-            # if not user.is_active:
-            #     messages.error(request, 'Please verify your email.')
-            #     return render(request, 'myApp/login.html', {'cart_count': 0})
             login(request, user)
             messages.success(request, f'Welcome back, {user.first_name}!')
             next_url = request.GET.get('next', 'dashboard')
@@ -323,7 +299,6 @@ def login_view(request):
 
 
 def verify_email(request, token):
-    """Activate account when user clicks email link."""
     try:
         profile = UserProfile.objects.get(email_token=token)
         if profile.user.is_active:
@@ -332,7 +307,7 @@ def verify_email(request, token):
             profile.user.is_active = True
             profile.user.save()
             profile.is_verified = True
-            profile.email_token  = ''   # invalidate token
+            profile.email_token  = ''
             profile.save()
             messages.success(request, f'Email verified! Welcome to AlphaMart, {profile.user.first_name}. You can now log in.')
     except UserProfile.DoesNotExist:
@@ -341,7 +316,6 @@ def verify_email(request, token):
 
 
 def resend_verification(request):
-    """Resend verification email if user didn't receive it."""
     if request.method == 'POST':
         email = request.POST.get('email', '').strip().lower()
         try:
@@ -384,12 +358,12 @@ def dashboard(request):
     sold_listings   = my_products.filter(status='sold').count()
     total_spent     = sum(o.amount for o in my_orders)
 
-    # Seller earnings
+    # Seller earnings — separate queries to avoid queryset cache issues
     my_earnings      = SellerEarning.objects.filter(seller=request.user)
-    total_earned     = sum(e.net_amount for e in my_earnings)
-    pending_earnings = sum(e.net_amount for e in my_earnings.filter(status='pending'))
-    available_bal    = sum(e.net_amount for e in my_earnings.filter(status='available'))
-    paid_out_total   = sum(e.net_amount for e in my_earnings.filter(status='paid_out'))
+    pending_earnings = sum(e.net_amount for e in SellerEarning.objects.filter(seller=request.user, status='pending'))
+    available_bal    = sum(e.net_amount for e in SellerEarning.objects.filter(seller=request.user, status='available'))
+    paid_out_total   = sum(e.net_amount for e in SellerEarning.objects.filter(seller=request.user, status='paid_out'))
+    total_earned     = pending_earnings + available_bal + paid_out_total
     my_payouts       = PayoutRequest.objects.filter(seller=request.user)
     commission_rate  = int(COMMISSION_RATE * 100)
 
@@ -415,7 +389,6 @@ def dashboard(request):
 
 @login_required
 def sell(request):
-    # Only sellers can list products
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if profile.role != 'seller':
         messages.error(request, 'Switch to Seller mode in your Profile to list items.')
@@ -451,9 +424,9 @@ def sell(request):
             for e in errors:
                 messages.error(request, e)
             return render(request, 'myApp/sell.html', {
-                'categories': categories,
-                'cart_count': _cart_count(request),
-            'unread_msg_count': _unread_count(request),
+                'categories':     categories,
+                'cart_count':     _cart_count(request),
+                'unread_msg_count': _unread_count(request),
             })
 
         try:
@@ -480,9 +453,9 @@ def sell(request):
             messages.error(request, f'Something went wrong: {str(e)}')
 
     return render(request, 'myApp/sell.html', {
-        'categories': categories,
-        'cart_count': _cart_count(request),
-    'unread_msg_count': _unread_count(request),
+        'categories':     categories,
+        'cart_count':     _cart_count(request),
+        'unread_msg_count': _unread_count(request),
     })
 
 
@@ -490,7 +463,7 @@ def sell(request):
 def cart_view(request):
     cart_items = Cart.objects.filter(user=request.user).select_related('product', 'product__category')
     subtotal   = sum(item.product.price for item in cart_items)
-    shipping   = 0  # Free for now (COD handled at checkout)
+    shipping   = 0
     total      = subtotal + shipping
 
     return render(request, 'myApp/cart.html', {
@@ -506,7 +479,6 @@ def cart_view(request):
 def add_to_cart(request, pk):
     product = get_object_or_404(Product, pk=pk)
 
-    # Only buyers can add to cart
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     if profile.role != 'buyer':
         messages.error(request, 'Switch to Buyer mode in your Profile to purchase items.')
@@ -553,11 +525,6 @@ def checkout(request):
     in_valley  = any(city in user_city for city in ktm_cities)
 
     def calc_shipping(method, amount):
-        """
-        Free if subtotal >= Rs. 1,00,000 (applies to ALL payment methods).
-        Otherwise: COD = Rs.200 valley / Rs.400 outside.
-        eSewa/Khalti below threshold still charge delivery.
-        """
         if amount >= 100000:
             return 0
         return 200 if in_valley else 400
@@ -569,7 +536,6 @@ def checkout(request):
     if request.method == 'POST':
         shipping_address = request.POST.get('shipping_address', '').strip()
         payment_method   = request.POST.get('payment_method', 'cod').strip()
-        # Recalculate with actual posted payment method
         shipping = calc_shipping(payment_method, subtotal)
         total    = subtotal + shipping
 
@@ -580,19 +546,28 @@ def checkout(request):
                 'shipping': shipping, 'total': total, 'cart_count': cart_items.count(),
             })
 
-        # Create orders + seller earnings
+        # ── Create orders ─────────────────────────────────────
+        # COD  → order is 'pending' (cash not received yet),
+        #         product marked 'sold' immediately.
+        # eSewa/Khalti → order is 'pending' until payment confirmed,
+        #         product stays 'available' until then so cancel restores it.
+        created_orders = []
         for item in cart_items:
             order = Order.objects.create(
                 buyer=request.user,
                 product=item.product,
                 amount=item.product.price,
-                status='paid',
+                status='pending',
                 shipping_address=shipping_address,
             )
-            item.product.status = 'sold'
-            item.product.save()
+            created_orders.append((order, item.product))
 
-            # Calculate commission and create seller earning record
+            # Only mark sold immediately for COD
+            if payment_method == 'cod':
+                item.product.status = 'sold'
+                item.product.save()
+
+            # Seller earning record — always pending until admin releases
             gross      = item.product.price
             commission = round(gross * COMMISSION_RATE, 2)
             net        = round(gross - commission, 2)
@@ -602,95 +577,173 @@ def checkout(request):
                 gross_amount = gross,
                 commission   = commission,
                 net_amount   = net,
-                status       = 'pending',  # Released after delivery confirmed
+                status       = 'pending',
             )
 
-        # Snapshot items before deleting for receipt email
+        # Snapshot items for receipt email
         receipt_items = [{'title': i.product.title, 'price': i.product.price} for i in cart_items]
         cart_items.delete()
 
         # Send receipt email
         _send_order_receipt(request, request.user, receipt_items, subtotal, shipping, total, payment_method, shipping_address)
 
-        # Payment routing
+        # ── Payment routing ───────────────────────────────────
         if payment_method == 'esewa':
-            import hashlib, hmac, uuid
-            txn_uuid   = str(uuid.uuid4())[:20]
+            import hashlib, hmac as hmac_lib, base64
+            txn_uuid   = str(uuid.uuid4()).replace('-', '')[:20]
             amount_str = str(int(total))
-            secret     = '8gBm/:&EnhH.1/q'
+            secret     = settings.ESEWA_SECRET_KEY
             msg        = f"total_amount={amount_str},transaction_uuid={txn_uuid},product_code=EPAYTEST"
-            sig        = hmac.new(secret.encode(), msg.encode(), hashlib.sha256).digest()
-            import base64
-            signature  = base64.b64encode(sig).decode()
+            raw_sig    = hmac_lib.new(secret.encode(), msg.encode(), hashlib.sha256).digest()
+            signature  = base64.b64encode(raw_sig).decode()
 
-            import urllib.parse
-            params = urllib.parse.urlencode({
-                'amount':           amount_str,
-                'failure_url':      request.build_absolute_uri('/dashboard/'),
-                'product_delivery_charge': '0',
-                'product_service_charge':  '0',
-                'product_code':     'EPAYTEST',
-                'signature':        signature,
-                'signed_field_names': 'total_amount,transaction_uuid,product_code',
-                'success_url':      request.build_absolute_uri('/dashboard/'),
-                'tax_amount':       '0',
-                'total_amount':     amount_str,
-                'transaction_uuid': txn_uuid,
+            esewa_params = {
+                'amount':                   amount_str,
+                'tax_amount':               '0',
+                'total_amount':             amount_str,
+                'transaction_uuid':         txn_uuid,
+                'product_code':             'EPAYTEST',
+                'product_service_charge':   '0',
+                'product_delivery_charge':  '0',
+                'success_url':              request.build_absolute_uri('/dashboard/'),
+                'failure_url':              request.build_absolute_uri('/payment-cancelled/'),
+                'signed_field_names':       'total_amount,transaction_uuid,product_code',
+                'signature':                signature,
+            }
+            # Send order notification to buyer dashboard inbox
+            try:
+                admin_user = User.objects.filter(is_superuser=True).first()
+                if admin_user:
+                    for order, product in created_orders:
+                        Message.objects.create(
+                            sender=admin_user,
+                            receiver=request.user,
+                            product=product,
+                            content=f'''✅ Your eSewa payment for "{product.title}" (Rs. {order.amount}) was received! Your item is on the way. Estimated delivery: 3–5 working days. Shipping to: {shipping_address}''',
+                        )
+            except Exception:
+                pass
+            return render(request, 'myApp/esewa_redirect.html', {
+                'esewa_url':    settings.ESEWA_PAYMENT_URL,
+                'esewa_params': esewa_params,
             })
-            from django.shortcuts import HttpResponseRedirect
-            return HttpResponseRedirect(f'https://rc-epay.esewa.com.np/api/epay/main/v2/form?{params}')
 
         elif payment_method == 'khalti':
-            import requests as req_lib, uuid
+            import requests as req_lib
             payload = {
-                'return_url':    request.build_absolute_uri('/dashboard/'),
-                'website_url':   request.build_absolute_uri('/'),
-                'amount':        int(total) * 100,   # paisa
-                'purchase_order_id': str(uuid.uuid4())[:20],
-                'purchase_order_name': f'AlphaMart Order',
+                'return_url':          request.build_absolute_uri('/dashboard/'),
+                'website_url':         request.build_absolute_uri('/'),
+                'amount':              int(total) * 100,   # paisa
+                'purchase_order_id':   str(uuid.uuid4()).replace('-', '')[:20],
+                'purchase_order_name': 'AlphaMart Order',
                 'customer_info': {
                     'name':  request.user.get_full_name() or request.user.username,
                     'email': request.user.email,
+                    'phone': getattr(getattr(request.user, 'userprofile', None), 'phone', '') or '9800000000',
                 },
             }
             headers = {
-                'Authorization': 'Key test_secret_key_dc74e0fd57cb46cd93832aee0a390234',
+                'Authorization': f'Key {settings.KHALTI_SECRET_KEY}',
                 'Content-Type':  'application/json',
             }
             try:
                 resp = req_lib.post(
-                    'https://a.khalti.com/api/v2/epayment/initiate/',
-                    json=payload, headers=headers, timeout=10
+                    settings.KHALTI_INITIATE_URL,
+                    json=payload, headers=headers, timeout=15
                 )
                 data = resp.json()
-                if resp.status_code == 200 and 'payment_url' in data:
+                payment_url = data.get('payment_url') or data.get('go_link')
+                if resp.status_code == 200 and payment_url:
+                    # Send order notification to buyer dashboard inbox
+                    try:
+                        admin_user = User.objects.filter(is_superuser=True).first()
+                        if admin_user:
+                            for order, product in created_orders:
+                                Message.objects.create(
+                                    sender=admin_user,
+                                    receiver=request.user,
+                                    product=product,
+                                    content=f'''✅ Your Khalti payment for "{product.title}" (Rs. {order.amount}) was received! Your item is on the way. Estimated delivery: 3–5 working days. Shipping to: {shipping_address}''',
+                                )
+                    except Exception:
+                        pass
                     from django.shortcuts import HttpResponseRedirect
-                    return HttpResponseRedirect(data['payment_url'])
+                    return HttpResponseRedirect(payment_url)
                 else:
-                    messages.error(request, f"Khalti error: {data.get('detail', 'Could not initiate payment.')}")
-                    return redirect('dashboard')
+                    err_detail = data.get('detail') or data.get('error_key') or str(data)
+                    messages.error(request, f"Khalti error: {err_detail}")
+                    return redirect('payment_cancelled')
             except Exception as e:
                 messages.error(request, f'Khalti connection failed: {e}')
-                return redirect('dashboard')
+                return redirect('payment_cancelled')
 
         else:  # COD
+            # Send order notification to buyer dashboard inbox
+            try:
+                admin_user = User.objects.filter(is_superuser=True).first()
+                if admin_user:
+                    for order, product in created_orders:
+                        Message.objects.create(
+                            sender=admin_user,
+                            receiver=request.user,
+                            product=product,
+                            content=f'''✅ Your order for "{product.title}" (Rs. {order.amount}) has been placed successfully! Your item is on the way via Cash on Delivery. Estimated delivery: 3–5 working days. Shipping to: {shipping_address}''',
+                        )
+            except Exception:
+                pass
             messages.success(request, 'Order placed! Cash on Delivery confirmed. Estimated delivery: 3–5 working days.')
             return redirect('dashboard')
 
     return render(request, 'myApp/checkout.html', {
-        'cart_items':  cart_items,
-        'subtotal':    subtotal,
-        'shipping':    shipping,
-        'total':       total,
-        'in_valley':   in_valley,
-        'cart_count':  cart_items.count(),
+        'cart_items':   cart_items,
+        'subtotal':     subtotal,
+        'shipping':     shipping,
+        'total':        total,
+        'in_valley':    in_valley,
+        'cart_count':   cart_items.count(),
         'user_address': profile.address if profile else '',
     })
 
 
+def payment_cancelled(request):
+    """
+    Called when user cancels eSewa or Khalti payment.
+    Restores pending orders back to available so the user can buy again.
+    """
+    if request.user.is_authenticated:
+        # Find latest pending orders for this user where product is NOT sold
+        pending_orders = Order.objects.filter(
+            buyer=request.user,
+            status='pending',
+        ).order_by('-created_at')[:20]
+
+        restored = 0
+        for order in pending_orders:
+            # Only restore if product was NOT a COD order (COD marks sold immediately)
+            if order.product.status != 'sold':
+                order.product.status = 'available'
+                order.product.save()
+                # Remove earning record — payment never happened
+                SellerEarning.objects.filter(order=order).delete()
+                # Re-add item to cart so user doesn't lose it
+                Cart.objects.get_or_create(user=request.user, product=order.product)
+                order.delete()
+                restored += 1
+
+        if restored:
+            messages.warning(request, 'Payment was cancelled. Your items have been restored to your cart.')
+        else:
+            messages.info(request, 'Payment was cancelled.')
+
+    return redirect('cart')
+
+
+# ──────────────────────────────────────────────────────────────
+#  MESSAGES
+# ──────────────────────────────────────────────────────────────
+
 @login_required
 def send_message(request, product_pk):
-    """Buyer sends a message to seller about a product."""
     product = get_object_or_404(Product, pk=product_pk)
 
     if request.method != 'POST':
@@ -701,7 +754,6 @@ def send_message(request, product_pk):
         messages.error(request, 'Message cannot be empty.')
         return redirect('product_detail', pk=product_pk)
 
-    # Prevent messaging yourself
     if request.user == product.seller:
         messages.error(request, 'You cannot message yourself.')
         return redirect('product_detail', pk=product_pk)
@@ -718,7 +770,6 @@ def send_message(request, product_pk):
 
 @login_required
 def seller_reply(request, product_pk, buyer_pk):
-    """Seller replies to a buyer's message about a product."""
     product = get_object_or_404(Product, pk=product_pk)
     buyer   = get_object_or_404(User, pk=buyer_pk)
 
@@ -730,7 +781,6 @@ def seller_reply(request, product_pk, buyer_pk):
         messages.error(request, 'Reply cannot be empty.')
         return redirect('conversation', product_pk=product_pk, other_pk=buyer_pk)
 
-    # Receiver is whoever is NOT the current user in this conversation
     receiver = buyer if request.user == product.seller else product.seller
 
     Message.objects.create(
@@ -744,11 +794,9 @@ def seller_reply(request, product_pk, buyer_pk):
 
 @login_required
 def conversation(request, product_pk, other_pk):
-    """Full conversation thread between two users about a product."""
     product    = get_object_or_404(Product, pk=product_pk)
     other_user = get_object_or_404(User, pk=other_pk)
 
-    # Get all messages between current user and other_user about this product
     thread = Message.objects.filter(
         product=product
     ).filter(
@@ -756,30 +804,26 @@ def conversation(request, product_pk, other_pk):
         Q(sender=other_user, receiver=request.user)
     ).order_by('created_at')
 
-    # Mark received messages as read
     thread.filter(receiver=request.user, is_read=False).update(is_read=True)
 
-    # Determine if current user is buyer or seller in this conversation
     is_seller = (request.user == product.seller)
 
     return render(request, 'myApp/conversation.html', {
-        'product':    product,
-        'other_user': other_user,
-        'thread':     thread,
-        'is_seller':  is_seller,
-        'cart_count': _cart_count(request),
-    'unread_msg_count': _unread_count(request),
+        'product':        product,
+        'other_user':     other_user,
+        'thread':         thread,
+        'is_seller':      is_seller,
+        'cart_count':     _cart_count(request),
+        'unread_msg_count': _unread_count(request),
     })
 
 
 @login_required
 def messages_view(request):
-    """Inbox — grouped by product+partner conversation."""
     all_msgs = Message.objects.filter(
         Q(sender=request.user) | Q(receiver=request.user)
     ).select_related('product', 'sender', 'receiver').order_by('-created_at')
 
-    # Group into unique conversations: (product, other_user)
     seen = set()
     conversations = []
     for msg in all_msgs:
@@ -799,15 +843,18 @@ def messages_view(request):
             })
 
     return render(request, 'myApp/messages.html', {
-        'conversations': conversations,
-        'cart_count': _cart_count(request),
-    'unread_msg_count': _unread_count(request),
+        'conversations':  conversations,
+        'cart_count':     _cart_count(request),
+        'unread_msg_count': _unread_count(request),
     })
 
 
+# ──────────────────────────────────────────────────────────────
+#  PAYOUT / COMPLAINTS / PROFILE
+# ──────────────────────────────────────────────────────────────
+
 @login_required
 def request_payout(request):
-    """Seller requests withdrawal of available balance."""
     if request.method != 'POST':
         return redirect('dashboard')
 
@@ -839,7 +886,6 @@ def request_payout(request):
         messages.error(request, f'Insufficient balance. Available: Rs. {available_bal}')
         return redirect('dashboard')
 
-    # Minimum payout Rs. 500
     if amount < 500:
         messages.error(request, 'Minimum payout amount is Rs. 500.')
         return redirect('dashboard')
@@ -878,7 +924,6 @@ def complaints_view(request):
                     return redirect('complaints')
 
             if against_user is None:
-                # Generic complaint not tied to a product — use admin as target
                 try:
                     against_user = User.objects.filter(is_superuser=True).first() or request.user
                 except Exception:
@@ -895,9 +940,9 @@ def complaints_view(request):
             return redirect('complaints')
 
     return render(request, 'myApp/complaints.html', {
-        'my_complaints': my_complaints,
-        'cart_count': _cart_count(request),
-    'unread_msg_count': _unread_count(request),
+        'my_complaints':  my_complaints,
+        'cart_count':     _cart_count(request),
+        'unread_msg_count': _unread_count(request),
     })
 
 
@@ -940,7 +985,6 @@ def update_profile(request):
 
 @login_required
 def toggle_role(request):
-    """Switch user between buyer and seller roles."""
     if request.method == 'POST':
         profile, _ = UserProfile.objects.get_or_create(user=request.user)
         new_role = request.POST.get('role', '').strip()
